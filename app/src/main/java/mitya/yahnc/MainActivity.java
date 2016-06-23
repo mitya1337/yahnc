@@ -15,7 +15,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar mainToolbar = (Toolbar) findViewById(R.id.mainToolbar);
         setSupportActionBar(mainToolbar);
-        getSupportActionBar().setTitle(this.getClass().getSimpleName());
+        getSupportActionBar().setTitle(R.string.toolbar_title);
     }
 
     @Override
@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                //code for refreshing the page
+                // TODO: code for refreshing the page
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
