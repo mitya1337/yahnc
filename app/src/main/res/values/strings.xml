@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">yahnc</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="toolbar_title">MainActivity</string>
 </resources>
