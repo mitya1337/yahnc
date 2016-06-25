@@ -1,5 +1,6 @@
 package mitya.yahnc;
 
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -40,17 +41,21 @@ public class MainActivity extends AppCompatActivity {
 
     public void setupStoriesList() throws IOException {
         recyclerView = (RecyclerView) findViewById(R.id.mainRecyclerView);
-        recyclerView.setHasFixedSize(true);
+        recyclerView.setAdapter(adapter);
         JsonStoryParser parser = new JsonStoryParser();
         Story story = parser.parse(getResources().openRawResource(R.raw.json));
         for (int i = 0; i < 20; i++) {
             storyList.add(story);
         }
-        adapter.addStories(storyList);
         layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(adapter);
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                adapter.addStories(storyList);
+            }
+        },1000);
     }
 
     @Override

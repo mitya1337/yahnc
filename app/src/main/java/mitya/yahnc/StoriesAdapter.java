@@ -20,10 +20,13 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
 
     public void addStory(Story story) {
         storyList.add(story);
+        this.notifyItemInserted(getItemCount());
     }
 
     public void addStories(List<Story> stories) {
+        int startPosition = getItemCount();
         storyList.addAll(stories);
+        this.notifyItemRangeInserted(startPosition, stories.size());
     }
 
     @Override

@@ -12,9 +12,9 @@ public class Story {
     public final int descendants;
     public final int score;
     public final long time;
-    public final Integer[] kids;
+    public final int[] kids;
 
-    public Story(String by, Integer descendants, Integer id, Integer[] kids, Integer score, long time, String title, String type, String url) {
+    public Story(String by, Integer descendants, Integer id, int[] kids, Integer score, long time, String title, String type, String url) {
         this.by = by;
         this.descendants = descendants;
         this.id = id;
