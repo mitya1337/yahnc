@@ -6,16 +6,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Mitya on 23.06.2016.
  */
 public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHolder> {
-    private List<Story> storyList;
+    private final List<Story> storyList = new ArrayList<>();
 
-    public StoriesAdapter(List<Story> storyList) {
-        this.storyList = storyList;
+    public StoriesAdapter() {
+    }
+
+    public void addStory(Story story) {
+        storyList.add(story);
+    }
+
+    public void addStories(List<Story> stories) {
+        storyList.addAll(stories);
     }
 
     @Override

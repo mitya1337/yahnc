@@ -15,9 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private List<Story> storyList = new ArrayList<>();
+    private final List<Story> storyList = new ArrayList<>();
     private RecyclerView recyclerView;
-    private RecyclerView.Adapter adapter;
+    private StoriesAdapter adapter = new StoriesAdapter();
     private RecyclerView.LayoutManager layoutManager;
 
     @Override
@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < 20; i++) {
             storyList.add(story);
         }
-        adapter = new StoriesAdapter(storyList);
+        adapter.addStories(storyList);
         layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
