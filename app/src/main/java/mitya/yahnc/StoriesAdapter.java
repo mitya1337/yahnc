@@ -11,10 +11,10 @@ import java.util.List;
 /**
  * Created by Mitya on 23.06.2016.
  */
-public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
+public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHolder> {
     private List<Story> storyList;
 
-    public Adapter(List<Story> storyList) {
+    public StoriesAdapter(List<Story> storyList) {
         this.storyList = storyList;
     }
 
