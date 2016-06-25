@@ -1,20 +1,23 @@
 package mitya.yahnc;
 
-import java.util.Arrays;
-
 /**
  * Created by Mitya on 23.06.2016.
  */
 public class Story {
-    private String by, title, url, type;
-    private Integer id, descendants, score;
+    private String by;
+    private String title;
+    private String url;
+    private String type;
+    private int id;
+    private int descendants;
+    private int score;
     private long time;
     private Integer[] kids;
 
     public Story() {
     }
 
-    public Story(String by, Integer descendants, Integer id, Integer[] kids, Integer score, long time, String title, String url) {
+    public Story(String by, Integer descendants, Integer id, Integer[] kids, Integer score, long time, String title, String type, String url) {
         this.by = by;
         this.descendants = descendants;
         this.id = id;
@@ -22,6 +25,7 @@ public class Story {
         this.score = score;
         this.time = time;
         this.title = title;
+        this.type = type;
         this.url = url;
     }
 
