@@ -27,9 +27,9 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Story story = storyList.get(position);
-        holder.title.setText(story.getTitle());
-        holder.by.setText(story.getBy());
-        holder.score.setText(story.getScore().toString());
+        holder.title.setText(story.title);
+        holder.by.setText(story.by);
+        holder.score.setText(String.format("%d", story.score));
     }
 
     @Override
