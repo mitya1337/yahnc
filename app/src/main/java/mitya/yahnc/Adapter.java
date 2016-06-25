@@ -17,9 +17,10 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     public Adapter(List<Story> storyList) {
         this.storyList = storyList;
     }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layout,parent,false);
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layout, parent, false);
         return new ViewHolder(itemView);
     }
 
@@ -37,7 +38,8 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView title,by,score;
+        public TextView title, by, score;
+
         public ViewHolder(View view) {
             super(view);
             title = (TextView) view.findViewById(R.id.itemTitle);

@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = (RecyclerView) findViewById(R.id.mainRecyclerView);
         recyclerView.setHasFixedSize(true);
         JsonStoryParser parser = new JsonStoryParser();
-        for(int i =0;i<20;i++) {
+        for (int i = 0; i < 20; i++) {
             try {
                 storyList.add(parser.parse(getResources().openRawResource(R.raw.json)));
             } catch (IOException e) {
@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.toolbar,menu);
+        inflater.inflate(R.menu.toolbar, menu);
         return true;
     }
 
