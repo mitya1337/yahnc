@@ -35,9 +35,9 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Story story = storyList.get(position);
-        holder.title.setText(story.title);
-        holder.by.setText(story.by);
-        holder.score.setText(String.format("%d", story.score));
+        holder.titleView.setText(story.title);
+        holder.byView.setText(story.by);
+        holder.scoreView.setText(String.format("%d", story.score));
     }
 
     @Override
@@ -46,13 +46,15 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView title, by, score;
+        public TextView titleView;
+        public TextView byView;
+        public TextView scoreView;
 
         public ViewHolder(View view) {
             super(view);
-            title = (TextView) view.findViewById(R.id.itemTitle);
-            by = (TextView) view.findViewById(R.id.itemBy);
-            score = (TextView) view.findViewById(R.id.itemScore);
+            titleView = (TextView) view.findViewById(R.id.itemTitle);
+            byView = (TextView) view.findViewById(R.id.itemBy);
+            scoreView = (TextView) view.findViewById(R.id.itemScore);
         }
     }
 }
