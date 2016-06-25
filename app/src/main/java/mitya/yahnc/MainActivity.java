@@ -25,7 +25,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setupToolbar();
-        setupStoriesList();
+        try {
+            setupStoriesList();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setupToolbar() {
@@ -34,16 +38,13 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setTitle(R.string.toolbar_title);
     }
 
-    public void setupStoriesList() {
+    public void setupStoriesList() throws IOException {
         recyclerView = (RecyclerView) findViewById(R.id.mainRecyclerView);
         recyclerView.setHasFixedSize(true);
         JsonStoryParser parser = new JsonStoryParser();
+        Story story = parser.parse(getResources().openRawResource(R.raw.json));
         for (int i = 0; i < 20; i++) {
-            try {
-                storyList.add(parser.parse(getResources().openRawResource(R.raw.json)));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            storyList.add(story);
         }
         adapter = new StoriesAdapter(storyList);
         layoutManager = new LinearLayoutManager(getApplicationContext());
