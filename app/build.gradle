@@ -20,10 +20,9 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.1.1'
-    compile 'com.android.support:recyclerview-v7:24.0+'
+    compile 'com.android.support:appcompat-v7:24.0.0'
+    compile 'com.android.support:recyclerview-v7:24.0.0'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.8.0.rc2'
     compile 'com.fasterxml.jackson.core:jackson-core:2.8.0.rc2'
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.0.rc2'
