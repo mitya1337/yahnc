@@ -62,8 +62,10 @@ public class MainActivity extends AppCompatActivity {
                 for (int i = 0; i < 20; i++) {
                     stories.add(story);
                 }
-                subscriber.onNext(stories);
-
+                if (!subscriber.isUnsubscribed()) {
+                    subscriber.onNext(stories);
+                    subscriber.onCompleted();
+                }
             }
         }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
