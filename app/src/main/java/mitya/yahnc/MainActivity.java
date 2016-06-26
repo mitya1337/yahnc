@@ -1,5 +1,6 @@
 package mitya.yahnc;
 
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -21,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private StoriesAdapter adapter = new StoriesAdapter();
     private RecyclerView.LayoutManager layoutManager;
+    @Nullable
     private Subscription storiesQuerySubscription;
 
     @Override
