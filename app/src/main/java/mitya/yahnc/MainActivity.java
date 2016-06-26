@@ -15,6 +15,7 @@ import java.util.List;
 
 import rx.Observable;
 import rx.Subscriber;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private StoriesAdapter adapter = new StoriesAdapter();
     private RecyclerView.LayoutManager layoutManager;
+    private Subscription subscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
-        Observable.create(new Observable.OnSubscribe<List<Story>>() {
+        subscription = Observable.create(new Observable.OnSubscribe<List<Story>>() {
             @Override
             public void call(Subscriber<? super List<Story>> subscriber) {
                 JsonStoryParser parser = new JsonStoryParser();
@@ -99,5 +101,11 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        subscription.unsubscribe();
     }
 }
