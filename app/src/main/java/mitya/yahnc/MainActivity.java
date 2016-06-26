@@ -13,8 +13,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import rx.Observable;
+import rx.Subscriber;
+
 public class MainActivity extends AppCompatActivity {
-    private final List<Story> storyList = new ArrayList<>();
     private RecyclerView recyclerView;
     private StoriesAdapter adapter = new StoriesAdapter();
     private RecyclerView.LayoutManager layoutManager;
@@ -40,14 +42,41 @@ public class MainActivity extends AppCompatActivity {
     public void setupStoriesList() throws IOException {
         recyclerView = (RecyclerView) findViewById(R.id.mainRecyclerView);
         recyclerView.setAdapter(adapter);
-        JsonStoryParser parser = new JsonStoryParser();
-        Story story = parser.parse(getResources().openRawResource(R.raw.json));
-        for (int i = 0; i < 20; i++) {
-            storyList.add(story);
-        }
         layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
-        adapter.addStories(storyList);
+        Observable.create(new Observable.OnSubscribe<List<Story>>() {
+            @Override
+            public void call(Subscriber<? super List<Story>> subscriber) {
+                JsonStoryParser parser = new JsonStoryParser();
+                Story story = null;
+                List<Story> stories = new ArrayList<Story>();
+                try {
+                    story = parser.parse(getResources().openRawResource(R.raw.json));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                for (int i = 0; i < 20; i++) {
+                    stories.add(story);
+                }
+                subscriber.onNext(stories);
+
+            }
+        }).subscribe(new Subscriber<List<Story>>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onNext(List<Story> storyList) {
+                adapter.addStories(storyList);
+            }
+        });
     }
 
     @Override
