@@ -10,10 +10,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
-import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -23,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private StoriesAdapter adapter = new StoriesAdapter();
     private RecyclerView.LayoutManager layoutManager;
-    private Subscription subscription;
+    private Subscription storiesQuerySubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,28 +46,8 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
-        subscription = Observable.create(new Observable.OnSubscribe<List<Story>>() {
-            @Override
-            public void call(Subscriber<? super List<Story>> subscriber) {
-                JsonStoryParser parser = new JsonStoryParser();
-                Story story = null;
-                List<Story> stories = new ArrayList<Story>();
-                try {
-                    story = parser.parse(getResources().openRawResource(R.raw.json));
-                } catch (IOException e) {
-                    if (!subscriber.isUnsubscribed()){
-                        subscriber.onError(e);
-                    }
-                }
-                for (int i = 0; i < 20; i++) {
-                    stories.add(story);
-                }
-                if (!subscriber.isUnsubscribed()) {
-                    subscriber.onNext(stories);
-                    subscriber.onCompleted();
-                }
-            }
-        }).subscribeOn(Schedulers.io())
+        StoriesService storiesService = new StoriesService(this);
+        storiesQuerySubscription = storiesService.createObservable().subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<List<Story>>() {
                     @Override
@@ -110,6 +88,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        subscription.unsubscribe();
+        storiesQuerySubscription.unsubscribe();
     }
 }
