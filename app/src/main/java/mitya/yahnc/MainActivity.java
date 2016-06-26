@@ -1,9 +1,7 @@
 package mitya.yahnc;
 
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -49,13 +47,7 @@ public class MainActivity extends AppCompatActivity {
         }
         layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                adapter.addStories(storyList);
-            }
-        },1000);
+        adapter.addStories(storyList);
     }
 
     @Override
