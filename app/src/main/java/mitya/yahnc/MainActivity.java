@@ -15,6 +15,8 @@ import java.util.List;
 
 import rx.Observable;
 import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
@@ -61,22 +63,24 @@ public class MainActivity extends AppCompatActivity {
                 subscriber.onNext(stories);
 
             }
-        }).subscribe(new Subscriber<List<Story>>() {
-            @Override
-            public void onCompleted() {
+        }).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<List<Story>>() {
+                    @Override
+                    public void onCompleted() {
 
-            }
+                    }
 
-            @Override
-            public void onError(Throwable e) {
+                    @Override
+                    public void onError(Throwable e) {
 
-            }
+                    }
 
-            @Override
-            public void onNext(List<Story> storyList) {
-                adapter.addStories(storyList);
-            }
-        });
+                    @Override
+                    public void onNext(List<Story> storyList) {
+                        adapter.addStories(storyList);
+                    }
+                });
     }
 
     @Override
