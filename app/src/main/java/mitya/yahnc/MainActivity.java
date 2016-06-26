@@ -90,6 +90,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        storiesQuerySubscription.unsubscribe();
+        if (storiesQuerySubscription != null) {
+            if(!storiesQuerySubscription.isUnsubscribed()) {
+                storiesQuerySubscription.unsubscribe();
+            }
+        }
     }
 }
