@@ -25,17 +25,17 @@ public class StoriesService {
             @Override
             public void call(Subscriber<? super List<Story>> subscriber) {
                 JsonStoryParser parser = new JsonStoryParser();
-                Story story = null;
+                Story story ;
                 List<Story> stories = new ArrayList<Story>();
                 try {
                     story = parser.parse(context.getResources().openRawResource(R.raw.json));
+                    for (int i = 0; i < 20; i++) {
+                        stories.add(story);
+                    }
                 } catch (IOException e) {
                     if (!subscriber.isUnsubscribed()) {
                         subscriber.onError(e);
                     }
-                }
-                for (int i = 0; i < 20; i++) {
-                    stories.add(story);
                 }
                 if (!subscriber.isUnsubscribed()) {
                     subscriber.onNext(stories);
