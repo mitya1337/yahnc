@@ -1,5 +1,6 @@
 package mitya.yahnc;
 
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,14 +11,19 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
+import rx.Subscriber;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+
 public class MainActivity extends AppCompatActivity {
-    private final List<Story> storyList = new ArrayList<>();
     private RecyclerView recyclerView;
     private StoriesAdapter adapter = new StoriesAdapter();
     private RecyclerView.LayoutManager layoutManager;
+    @Nullable
+    private Subscription storiesQuerySubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,14 +46,27 @@ public class MainActivity extends AppCompatActivity {
     public void setupStoriesList() throws IOException {
         recyclerView = (RecyclerView) findViewById(R.id.mainRecyclerView);
         recyclerView.setAdapter(adapter);
-        JsonStoryParser parser = new JsonStoryParser();
-        Story story = parser.parse(getResources().openRawResource(R.raw.json));
-        for (int i = 0; i < 20; i++) {
-            storyList.add(story);
-        }
         layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
-        adapter.addStories(storyList);
+        StoriesService storiesService = new StoriesService(this);
+        storiesQuerySubscription = storiesService.createObservable().subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<List<Story>>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onNext(List<Story> storyList) {
+                        adapter.addStories(storyList);
+                    }
+                });
     }
 
     @Override
@@ -65,6 +84,16 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (storiesQuerySubscription != null) {
+            if(!storiesQuerySubscription.isUnsubscribed()) {
+                storiesQuerySubscription.unsubscribe();
+            }
         }
     }
 }
