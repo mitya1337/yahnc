@@ -24,7 +24,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
     }
 
     public void addStories(List<Story> stories) {
-        int startPosition = getItemCount() - 1;
+        int startPosition = getItemCount();
         storyList.addAll(stories);
         this.notifyItemRangeInserted(startPosition, stories.size());
     }
