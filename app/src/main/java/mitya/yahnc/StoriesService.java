@@ -32,14 +32,14 @@ public class StoriesService {
                     for (int i = 0; i < 20; i++) {
                         stories.add(story);
                     }
+                    if (!subscriber.isUnsubscribed()) {
+                        subscriber.onNext(stories);
+                        subscriber.onCompleted();
+                    }
                 } catch (IOException e) {
                     if (!subscriber.isUnsubscribed()) {
                         subscriber.onError(e);
                     }
-                }
-                if (!subscriber.isUnsubscribed()) {
-                    subscriber.onNext(stories);
-                    subscriber.onCompleted();
                 }
             }
         });
