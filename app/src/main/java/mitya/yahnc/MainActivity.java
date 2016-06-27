@@ -6,11 +6,13 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import rx.Subscriber;
@@ -30,11 +32,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setupToolbar();
-        try {
+        /*try {
             setupStoriesList();
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
+        getNewStories();
     }
 
     public void setupToolbar() {
@@ -69,6 +72,53 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    public void getNewStories() {
+        recyclerView = (RecyclerView) findViewById(R.id.mainRecyclerView);
+        recyclerView.setAdapter(adapter);
+        layoutManager = new LinearLayoutManager(getApplicationContext());
+        recyclerView.setLayoutManager(layoutManager);
+        HackerNewsService service = ServiceFactory.createRetrofitService(HackerNewsService.class, HackerNewsService.SERVICE_BASEPOINT);
+        service.getItems("newstories.json")
+                .subscribeOn(Schedulers.newThread())
+                .subscribe(new Subscriber<int[]>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e("OSHIBKA", e.getMessage());
+                    }
+
+                    @Override
+                    public void onNext(int[] ints) {
+                        StoryInterface storyInterface = ServiceFactory.createRetrofitService(StoryInterface.class, StoryInterface.SERVICE_BASEPOINT);
+                        for (int i = 0; i < ints.length; i++) {
+                            storyInterface.getStory(Integer.toString(ints[i]) + ".json")
+                                    .subscribeOn(Schedulers.newThread())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(new Subscriber<Story>() {
+                                        @Override
+                                        public void onCompleted() {
+
+                                        }
+
+                                        @Override
+                                        public void onError(Throwable e) {
+
+                                        }
+
+                                        @Override
+                                        public void onNext(Story story) {
+                                            adapter.addStory(story);
+                                        }
+                                    });
+                        }
+                    }
+                });
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -91,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         if (storiesQuerySubscription != null) {
-            if(!storiesQuerySubscription.isUnsubscribed()) {
+            if (!storiesQuerySubscription.isUnsubscribed()) {
                 storiesQuerySubscription.unsubscribe();
             }
         }
