@@ -32,11 +32,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setupToolbar();
-        /*try {
+        try {
             setupStoriesList();
         } catch (IOException e) {
             e.printStackTrace();
-        }*/
+        }
         getNewStories();
     }
 
@@ -51,32 +51,9 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
-        StoriesService storiesService = new StoriesService(this);
-        storiesQuerySubscription = storiesService.createObservable().subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<List<Story>>() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onNext(List<Story> storyList) {
-                        adapter.addStories(storyList);
-                    }
-                });
     }
 
     private void getNewStories() {
-        recyclerView = (RecyclerView) findViewById(R.id.mainRecyclerView);
-        recyclerView.setAdapter(adapter);
-        layoutManager = new LinearLayoutManager(getApplicationContext());
-        recyclerView.setLayoutManager(layoutManager);
         HackerNewsService service = ServiceFactory.createRetrofitService(HackerNewsService.class, HackerNewsService.SERVICE_BASEPOINT);
         service.getItems("newstories.json")
                 .subscribeOn(Schedulers.newThread())
