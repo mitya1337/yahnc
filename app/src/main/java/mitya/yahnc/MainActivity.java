@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void getNewStories() {
         HackerNewsService service = ServiceFactory.createRetrofitService(HackerNewsService.class, HackerNewsService.SERVICE_BASEPOINT);
-        service.getItems("newstories.json")
+        storiesQuerySubscription = service.getItems("newstories")
                 .subscribeOn(Schedulers.newThread())
                 .subscribe(new Subscriber<int[]>() {
                     @Override
@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onNext(int[] ints) {
                         StoryInterface storyInterface = ServiceFactory.createRetrofitService(StoryInterface.class, StoryInterface.SERVICE_BASEPOINT);
                         for (int i = 0; i < ints.length; i++) {
-                            storyInterface.getStory(Integer.toString(ints[i]) + ".json")
+                            storyInterface.getStory(ints[i])
                                     .subscribeOn(Schedulers.newThread())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(new Subscriber<Story>() {

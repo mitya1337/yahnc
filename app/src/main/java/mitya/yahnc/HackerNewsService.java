@@ -10,6 +10,6 @@ import rx.Observable;
 public interface HackerNewsService {
     String SERVICE_BASEPOINT = "https://hacker-news.firebaseio.com/";
 
-    @GET("v0/{items}")
+    @GET("v0/{items}.json")
     Observable<int[]> getItems(@Path("items") String items);
 }
