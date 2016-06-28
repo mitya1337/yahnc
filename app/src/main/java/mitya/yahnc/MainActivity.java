@@ -40,13 +40,13 @@ public class MainActivity extends AppCompatActivity {
         getNewStories();
     }
 
-    public void setupToolbar() {
+    private void setupToolbar() {
         Toolbar mainToolbar = (Toolbar) findViewById(R.id.mainToolbar);
         setSupportActionBar(mainToolbar);
         getSupportActionBar().setTitle(R.string.toolbar_title);
     }
 
-    public void setupStoriesList() throws IOException {
+    private void setupStoriesList() throws IOException {
         recyclerView = (RecyclerView) findViewById(R.id.mainRecyclerView);
         recyclerView.setAdapter(adapter);
         layoutManager = new LinearLayoutManager(getApplicationContext());
@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    public void getNewStories() {
+    private void getNewStories() {
         recyclerView = (RecyclerView) findViewById(R.id.mainRecyclerView);
         recyclerView.setAdapter(adapter);
         layoutManager = new LinearLayoutManager(getApplicationContext());
