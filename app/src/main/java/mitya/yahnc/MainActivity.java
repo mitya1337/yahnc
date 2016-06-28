@@ -69,10 +69,10 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onNext(int[] ints) {
+                    public void onNext(int[] storyIds) {
                         StoryInterface storyInterface = ServiceFactory.createRetrofitService(StoryInterface.class, StoryInterface.SERVICE_BASEPOINT);
-                        for (int i = 0; i < ints.length; i++) {
-                            storyInterface.getStory(ints[i])
+                        for (int i = 0; i < storyIds.length; i++) {
+                            storyInterface.getStory(storyIds[i])
                                     .subscribeOn(Schedulers.newThread())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(new Subscriber<Story>() {
