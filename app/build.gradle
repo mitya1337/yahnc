@@ -12,9 +12,13 @@ android {
         versionName "1.0"
     }
     buildTypes {
+        debug {
+            buildConfigField "String", "API_URL", "\"https://hacker-news.firebaseio.com/\""
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "API_URL", "https:://hacker-news.firebaseio.com/"
         }
     }
 }

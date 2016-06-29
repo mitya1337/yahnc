@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getNewStories() {
-        HackerNewsService service = ServiceFactory.createRetrofitService(HackerNewsService.class, HackerNewsService.SERVICE_BASEPOINT);
+        HackerNewsService service = ServiceFactory.createRetrofitService(HackerNewsService.class, BuildConfig.API_URL);
         storiesQuerySubscription = service.getItems("newstories")
                 .subscribeOn(Schedulers.io())
                 .subscribe(new Subscriber<int[]>() {
@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext(int[] storyIds) {
-                        StoryInterface storyInterface = ServiceFactory.createRetrofitService(StoryInterface.class, StoryInterface.SERVICE_BASEPOINT);
+                        StoryInterface storyInterface = ServiceFactory.createRetrofitService(StoryInterface.class, BuildConfig.API_URL);
                         for (int i = 0; i < storyIds.length; i++) {
                             storyInterface.getStory(storyIds[i])
                                     .subscribeOn(Schedulers.io())
