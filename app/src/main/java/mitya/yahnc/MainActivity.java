@@ -12,8 +12,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 import rx.Subscriber;
 import rx.Subscription;
@@ -54,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getNewStories() {
-        storiesQuerySubscription = StoryIdsManager.getService().getItems("newstories")
+        storiesQuerySubscription = StoryIdsService.getInstance().service.getItems("newstories")
                 .subscribeOn(Schedulers.io())
                 .subscribe(new Subscriber<int[]>() {
                     @Override
@@ -70,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onNext(int[] storyIds) {
                         for (int i = 0; i < storyIds.length; i++) {
-                            StoryManager.getService().getStory(storyIds[i])
+                            StoryService.getInstance().service.getStory(storyIds[i])
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(new Subscriber<Story>() {

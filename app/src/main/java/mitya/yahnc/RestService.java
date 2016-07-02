@@ -5,16 +5,21 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
- * Created by Mitya on 27.06.2016.
+ * Created by Mitya on 02.07.2016.
  */
-public class ServiceFactory {
-    public static <T> T createRetrofitService(final Class<T> tClass, final String baseUrl) {
-        final Retrofit retrofit = new Retrofit.Builder()
+public abstract class RestService<T> {
+    protected final T service;
+
+    protected RestService(Class<T> serviceType) {
+        this(serviceType, BuildConfig.API_URL);
+    }
+
+    protected RestService(Class<T> serviceType, String baseUrl) {
+        Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .build();
-        T service = retrofit.create(tClass);
-        return service;
+        service = retrofit.create(serviceType);
     }
 }
