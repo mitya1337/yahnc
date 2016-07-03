@@ -29,6 +29,12 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
         this.notifyItemRangeInserted(startPosition, stories.size());
     }
 
+    public void clearData() {
+        int size = storyList.size();
+        storyList.clear();
+        this.notifyItemRangeRemoved(0,size);
+    }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layout, parent, false);
