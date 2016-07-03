@@ -56,38 +56,10 @@ public class MainActivity extends AppCompatActivity {
     private void getNewStories() {
         storiesQuerySubscription = StoryIdsService.getInstance().service.getItems("newstories").
                 subscribeOn(Schedulers.io()).
-                flatMap(new Func1<Integer[], Observable<Integer>>() {
-                    @Override
-                    public Observable<Integer> call(Integer[] integers) {
-                        return Observable.from(integers).subscribeOn(Schedulers.io());
-                    }
-                }).
-                flatMap(new Func1<Integer, Observable<Story>>() {
-                    @Override
-                    public Observable<Story> call(Integer id) {
-                        return StoryService.getInstance().service.getStory(id).subscribeOn(Schedulers.io());
-                    }
-                }).
+                flatMap(integers -> Observable.from(integers).subscribeOn(Schedulers.io())).
+                flatMap(id -> StoryService.getInstance().service.getStory(id).subscribeOn(Schedulers.io())).
                 observeOn(AndroidSchedulers.mainThread()).
-                subscribe(new Subscriber<Story>() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-
-                    }
-
-                    @Override
-                    public void onNext(Story story) {
-                        adapter.addStory(story);
-                    }
-                });
-
-
+                subscribe(adapter::addStory, Throwable::printStackTrace);
     }
 
     @Override
