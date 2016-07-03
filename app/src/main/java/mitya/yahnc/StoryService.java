@@ -23,6 +23,6 @@ public class StoryService extends RestService<StoryService.Api> {
 
     public interface Api {
         @GET("v0/item/{id}.json")
-        Observable<Story> getStory(@Path("id") int id);
+        Observable<Story> getStory(@Path("id") Integer id);
     }
 }

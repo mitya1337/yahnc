@@ -23,6 +23,6 @@ public class StoryIdsService extends RestService<StoryIdsService.Api> {
 
     public interface Api {
         @GET("v0/{items}.json")
-        Observable<int[]> getItems(@Path("items") String items);
+        Observable<Integer[]> getItems(@Path("items") String items);
     }
 }

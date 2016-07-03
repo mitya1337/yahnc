@@ -13,9 +13,11 @@ import android.view.MenuItem;
 
 import java.io.IOException;
 
+import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
@@ -52,9 +54,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getNewStories() {
-        storiesQuerySubscription = StoryIdsService.getInstance().service.getItems("newstories")
-                .subscribeOn(Schedulers.io())
-                .subscribe(new Subscriber<int[]>() {
+        storiesQuerySubscription = StoryIdsService.getInstance().service.getItems("newstories").
+                subscribeOn(Schedulers.io()).
+                flatMap(new Func1<Integer[], Observable<Integer>>() {
+                    @Override
+                    public Observable<Integer> call(Integer[] integers) {
+                        return Observable.from(integers).subscribeOn(Schedulers.io());
+                    }
+                }).
+                flatMap(new Func1<Integer, Observable<Story>>() {
+                    @Override
+                    public Observable<Story> call(Integer id) {
+                        return StoryService.getInstance().service.getStory(id).subscribeOn(Schedulers.io());
+                    }
+                }).
+                observeOn(AndroidSchedulers.mainThread()).
+                subscribe(new Subscriber<Story>() {
                     @Override
                     public void onCompleted() {
 
@@ -62,34 +77,17 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.e("OSHIBKA", e.getMessage());
+                        e.printStackTrace();
+
                     }
 
                     @Override
-                    public void onNext(int[] storyIds) {
-                        for (int i = 0; i < storyIds.length; i++) {
-                            StoryService.getInstance().service.getStory(storyIds[i])
-                                    .subscribeOn(Schedulers.io())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(new Subscriber<Story>() {
-                                        @Override
-                                        public void onCompleted() {
-
-                                        }
-
-                                        @Override
-                                        public void onError(Throwable e) {
-
-                                        }
-
-                                        @Override
-                                        public void onNext(Story story) {
-                                            adapter.addStory(story);
-                                        }
-                                    });
-                        }
+                    public void onNext(Story story) {
+                        adapter.addStory(story);
                     }
                 });
+
+
     }
 
     @Override
