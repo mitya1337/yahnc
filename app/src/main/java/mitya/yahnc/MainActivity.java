@@ -1,6 +1,7 @@
 package mitya.yahnc;
 
 import android.support.annotation.Nullable;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private StoriesAdapter adapter = new StoriesAdapter();
     private RecyclerView.LayoutManager layoutManager;
+    private SwipeRefreshLayout swipeRefreshLayout;
     @Nullable
     private Subscription storiesQuerySubscription;
 
@@ -32,21 +34,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setupToolbar();
-        try {
-            setupStoriesList();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        setupSwipeRefreshLayout();
+        setupStoriesList();
         getNewStories();
+    }
+
+    private void setupSwipeRefreshLayout() {
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
+        swipeRefreshLayout.setOnRefreshListener(this::getNewStories);
     }
 
     private void setupToolbar() {
         Toolbar mainToolbar = (Toolbar) findViewById(R.id.mainToolbar);
         setSupportActionBar(mainToolbar);
-        getSupportActionBar().setTitle(R.string.toolbar_title);
+        setTitle(R.string.toolbar_title);
     }
 
-    private void setupStoriesList() throws IOException {
+    private void setupStoriesList() {
         recyclerView = (RecyclerView) findViewById(R.id.mainRecyclerView);
         recyclerView.setAdapter(adapter);
         layoutManager = new LinearLayoutManager(getApplicationContext());
@@ -54,12 +58,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getNewStories() {
+        if (storiesQuerySubscription != null) {
+            if (!storiesQuerySubscription.isUnsubscribed()) storiesQuerySubscription.unsubscribe();
+        }
+        adapter.clearData();
         storiesQuerySubscription = StoryIdsService.getInstance().service.getItems("newstories").
                 subscribeOn(Schedulers.io()).
                 flatMap(integers -> Observable.from(integers).subscribeOn(Schedulers.io())).
-                flatMap(id -> StoryService.getInstance().service.getStory(id).subscribeOn(Schedulers.io())).
+                flatMap(id -> StoryService.getInstance().service.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
                 observeOn(AndroidSchedulers.mainThread()).
-                subscribe(adapter::addStory, Throwable::printStackTrace);
+                subscribe(adapter::addStory, error -> {
+                    swipeRefreshLayout.setRefreshing(false);
+                    error.printStackTrace();
+                }, () -> swipeRefreshLayout.setRefreshing(false));
     }
 
     @Override
@@ -73,7 +84,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                // TODO: code for refreshing the page
+                swipeRefreshLayout.setRefreshing(true);
+                getNewStories();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

@@ -1,6 +1,7 @@
 package mitya.yahnc;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +30,12 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
         this.notifyItemRangeInserted(startPosition, stories.size());
     }
 
+    public void clearData() {
+        int size = storyList.size();
+        storyList.clear();
+        this.notifyItemRangeRemoved(0,size);
+    }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layout, parent, false);
@@ -38,6 +45,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Story story = storyList.get(position);
+        Log.d("TEST",story.title);
         holder.titleView.setText(story.title);
         holder.byView.setText(story.by);
         holder.scoreView.setText(String.format("%d", story.score));

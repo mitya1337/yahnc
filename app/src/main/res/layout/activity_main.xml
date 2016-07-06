@@ -14,6 +14,10 @@
         android:elevation="4dp"
         android:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar" />
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swiperefresh"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/mainRecyclerView"
@@ -21,5 +25,6 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/mainToolbar"
         android:scrollbars="vertical" />
+    </android.support.v4.widget.SwipeRefreshLayout>
 
 </LinearLayout>
