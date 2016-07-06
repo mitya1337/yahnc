@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         adapter.clearData();
         storiesQuerySubscription = StoryIdsService.getInstance().service.getItems("newstories").
                 subscribeOn(Schedulers.io()).
-                flatMap(integers -> Observable.from(integers).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Integer>empty())).
+                flatMap(integers -> Observable.from(integers).subscribeOn(Schedulers.io())).
                 flatMap(id -> StoryService.getInstance().service.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
                 observeOn(AndroidSchedulers.mainThread()).
                 subscribe(adapter::addStory, error -> {
