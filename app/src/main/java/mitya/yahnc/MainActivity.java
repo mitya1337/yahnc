@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private void setupToolbar() {
         Toolbar mainToolbar = (Toolbar) findViewById(R.id.mainToolbar);
         setSupportActionBar(mainToolbar);
-        getSupportActionBar().setTitle(R.string.toolbar_title);
+        setTitle(R.string.toolbar_title);
     }
 
     private void setupStoriesList() {
