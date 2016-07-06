@@ -35,11 +35,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setupToolbar();
         setupSwipeRefreshLayout();
-        try {
-            setupStoriesList();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        setupStoriesList();
         getNewStories();
     }
 
@@ -54,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setTitle(R.string.toolbar_title);
     }
 
-    private void setupStoriesList() throws IOException {
+    private void setupStoriesList() {
         recyclerView = (RecyclerView) findViewById(R.id.mainRecyclerView);
         recyclerView.setAdapter(adapter);
         layoutManager = new LinearLayoutManager(getApplicationContext());
