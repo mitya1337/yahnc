@@ -66,8 +66,12 @@ public class MainActivity extends AppCompatActivity {
                 subscribeOn(Schedulers.io()).
                 flatMap(integers -> Observable.from(integers).subscribeOn(Schedulers.io())).
                 flatMap(id -> StoryService.getInstance().service.getStory(id).subscribeOn(Schedulers.io())).
+                onErrorResumeNext(Observable.<Story>empty()).
                 observeOn(AndroidSchedulers.mainThread()).
-                subscribe(adapter::addStory, Throwable::printStackTrace, () -> swipeRefreshLayout.setRefreshing(false));
+                subscribe(adapter::addStory, error -> {
+                    swipeRefreshLayout.setRefreshing(false);
+                    error.printStackTrace();
+                }, () -> swipeRefreshLayout.setRefreshing(false));
     }
 
     @Override
