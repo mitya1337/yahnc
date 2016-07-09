@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
-        recyclerView.addOnScrollListener(endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener((LinearLayoutManager)layoutManager) {
+        recyclerView.addOnScrollListener(endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener((LinearLayoutManager) layoutManager) {
             @Override
             public void onLoadMore(int currentPage) {
                 addNewPage(currentPage);
@@ -67,9 +67,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addNewPage(int currentPage) {
-        Observable.from(newStories).flatMap(id -> StoryService.getInstance().service.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
-                skip(PAGE*(currentPage-1)).
+        Observable.from(newStories).
+                skip(PAGE * (currentPage - 1)).
                 take(PAGE).
+                flatMap(id -> StoryService.getInstance().service.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
                 observeOn(AndroidSchedulers.mainThread()).
                 subscribe(adapter::addStory);
     }
@@ -81,7 +82,10 @@ public class MainActivity extends AppCompatActivity {
         adapter.clearData();
         storiesQuerySubscription = StoryIdsService.getInstance().service.getItems("newstories").
                 subscribeOn(Schedulers.io()).
-                flatMap(integers -> {newStories = integers; return Observable.from(integers).subscribeOn(Schedulers.io());}).
+                flatMap(integers -> {
+                    newStories = integers;
+                    return Observable.from(integers).subscribeOn(Schedulers.io());
+                }).
                 flatMap(id -> StoryService.getInstance().service.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
                 take(PAGE).
                 observeOn(AndroidSchedulers.mainThread()).
