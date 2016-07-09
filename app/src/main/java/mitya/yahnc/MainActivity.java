@@ -26,6 +26,9 @@ public class MainActivity extends AppCompatActivity {
     private StoriesAdapter adapter = new StoriesAdapter();
     private RecyclerView.LayoutManager layoutManager;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private Integer[] newStories;
+    private final int PAGE = 20;
+    private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
     @Nullable
     private Subscription storiesQuerySubscription;
 
@@ -55,6 +58,20 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.addOnScrollListener(endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener((LinearLayoutManager)layoutManager) {
+            @Override
+            public void onLoadMore(int currentPage) {
+                addNewPage(currentPage);
+            }
+        });
+    }
+
+    private void addNewPage(int currentPage) {
+        Observable.from(newStories).flatMap(id -> StoryService.getInstance().service.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
+                skip(PAGE*(currentPage-1)).
+                take(PAGE).
+                observeOn(AndroidSchedulers.mainThread()).
+                subscribe(adapter::addStory);
     }
 
     private void getNewStories() {
@@ -64,13 +81,15 @@ public class MainActivity extends AppCompatActivity {
         adapter.clearData();
         storiesQuerySubscription = StoryIdsService.getInstance().service.getItems("newstories").
                 subscribeOn(Schedulers.io()).
-                flatMap(integers -> Observable.from(integers).subscribeOn(Schedulers.io())).
+                flatMap(integers -> {newStories = integers; return Observable.from(integers).subscribeOn(Schedulers.io());}).
                 flatMap(id -> StoryService.getInstance().service.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
+                take(PAGE).
                 observeOn(AndroidSchedulers.mainThread()).
                 subscribe(adapter::addStory, error -> {
                     swipeRefreshLayout.setRefreshing(false);
                     error.printStackTrace();
                 }, () -> swipeRefreshLayout.setRefreshing(false));
+        endlessRecyclerOnScrollListener.setCurrentPage(1);
     }
 
     @Override
