@@ -23,6 +23,7 @@ import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
     private static final int STORIES_PER_PAGE = 20;
+    private final StoryService.Api storyService = StoryService.getInstance().service;
 
     private RecyclerView recyclerView;
     private StoriesAdapter adapter = new StoriesAdapter();
@@ -71,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         Observable.from(newStories).
                 skip(STORIES_PER_PAGE * (currentPage - 1)).
                 take(STORIES_PER_PAGE).
-                flatMap(id -> StoryService.getInstance().service.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
+                flatMap(id -> storyService.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
                 observeOn(AndroidSchedulers.mainThread()).
                 subscribe(adapter::addStory);
     }
@@ -87,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
                     newStories = integers;
                     return Observable.from(integers).subscribeOn(Schedulers.io());
                 }).
-                flatMap(id -> StoryService.getInstance().service.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
+                flatMap(id -> storyService.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
                 take(STORIES_PER_PAGE).
                 observeOn(AndroidSchedulers.mainThread()).
                 subscribe(adapter::addStory, error -> {
