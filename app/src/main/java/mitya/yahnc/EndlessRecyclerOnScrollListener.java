@@ -18,6 +18,10 @@ public abstract class EndlessRecyclerOnScrollListener extends RecyclerView.OnScr
         this.currentPage = currentPage;
     }
 
+    public int getCurrentPage() {
+        return currentPage;
+    }
+
     private LinearLayoutManager mLinearLayoutManager;
 
     public EndlessRecyclerOnScrollListener(LinearLayoutManager linearLayoutManager) {

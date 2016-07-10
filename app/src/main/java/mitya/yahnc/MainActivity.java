@@ -29,10 +29,8 @@ public class MainActivity extends AppCompatActivity {
     private StoriesAdapter adapter = new StoriesAdapter();
     private LinearLayoutManager layoutManager;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private Integer[] newStories;
+    private Observable<Integer[]> newStories;
     private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
-    @Nullable
-    private Subscription storiesQuerySubscription;
     @Nullable
     private Subscription newPageQuerySubscription;
 
@@ -44,11 +42,16 @@ public class MainActivity extends AppCompatActivity {
         setupSwipeRefreshLayout();
         setupStoriesList();
         getNewStories();
+        addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
     }
 
     private void setupSwipeRefreshLayout() {
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
-        swipeRefreshLayout.setOnRefreshListener(this::getNewStories);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            adapter.clearData();
+            endlessRecyclerOnScrollListener.setCurrentPage(1);
+            addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
+        });
     }
 
     private void setupToolbar() {
@@ -71,33 +74,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addNewPage(int currentPage) {
-        newPageQuerySubscription = Observable.from(newStories).
+        newPageQuerySubscription = newStories.
+                flatMap(stories -> Observable.from(stories).subscribeOn(Schedulers.io())).
                 skip(STORIES_PER_PAGE * (currentPage - 1)).
                 take(STORIES_PER_PAGE).
                 flatMap(id -> storyService.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
                 observeOn(AndroidSchedulers.mainThread()).
-                subscribe(adapter::addStory, Throwable::printStackTrace);
+                subscribeOn(Schedulers.io()).
+                subscribe(adapter::addStory, error -> {
+                    error.printStackTrace();
+                    swipeRefreshLayout.setRefreshing(false);
+                }, () -> swipeRefreshLayout.setRefreshing(false));
     }
 
     private void getNewStories() {
-        if (storiesQuerySubscription != null) {
-            if (!storiesQuerySubscription.isUnsubscribed()) storiesQuerySubscription.unsubscribe();
-        }
-        adapter.clearData();
-        storiesQuerySubscription = StoryIdsService.getInstance().service.getItems("newstories").
-                subscribeOn(Schedulers.io()).
-                flatMap(integers -> {
-                    newStories = integers;
-                    return Observable.from(integers).subscribeOn(Schedulers.io());
-                }).
-                flatMap(id -> storyService.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
-                take(STORIES_PER_PAGE).
-                observeOn(AndroidSchedulers.mainThread()).
-                subscribe(adapter::addStory, error -> {
-                    swipeRefreshLayout.setRefreshing(false);
-                    error.printStackTrace();
-                }, () -> swipeRefreshLayout.setRefreshing(false));
-        endlessRecyclerOnScrollListener.setCurrentPage(1);
+        newStories = StoryIdsService.getInstance().service.getItems("newstories");
     }
 
     @Override
@@ -112,7 +103,9 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_refresh:
                 swipeRefreshLayout.setRefreshing(true);
-                getNewStories();
+                adapter.clearData();
+                endlessRecyclerOnScrollListener.setCurrentPage(1);
+                addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -122,11 +115,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if (storiesQuerySubscription != null) {
-            if (!storiesQuerySubscription.isUnsubscribed()) {
-                storiesQuerySubscription.unsubscribe();
-            }
-        }
         if (newPageQuerySubscription != null) {
             if (!newPageQuerySubscription.isUnsubscribed()) {
                 newPageQuerySubscription.unsubscribe();
