@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private StoriesAdapter adapter = new StoriesAdapter();
-    private RecyclerView.LayoutManager layoutManager;
+    private LinearLayoutManager layoutManager;
     private SwipeRefreshLayout swipeRefreshLayout;
     private Integer[] newStories;
     private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
-        recyclerView.addOnScrollListener(endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener((LinearLayoutManager) layoutManager) {
+        recyclerView.addOnScrollListener(endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(layoutManager) {
             @Override
             public void onLoadMore(int currentPage) {
                 addNewPage(currentPage);
