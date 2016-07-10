@@ -33,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
     @Nullable
     private Subscription storiesQuerySubscription;
+    @Nullable
+    private Subscription newPageQuerySubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,12 +71,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addNewPage(int currentPage) {
-        Observable.from(newStories).
+        newPageQuerySubscription = Observable.from(newStories).
                 skip(STORIES_PER_PAGE * (currentPage - 1)).
                 take(STORIES_PER_PAGE).
                 flatMap(id -> storyService.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
                 observeOn(AndroidSchedulers.mainThread()).
-                subscribe(adapter::addStory);
+                subscribe(adapter::addStory, Throwable::printStackTrace);
     }
 
     private void getNewStories() {
@@ -123,6 +125,11 @@ public class MainActivity extends AppCompatActivity {
         if (storiesQuerySubscription != null) {
             if (!storiesQuerySubscription.isUnsubscribed()) {
                 storiesQuerySubscription.unsubscribe();
+            }
+        }
+        if (newPageQuerySubscription != null) {
+            if (!newPageQuerySubscription.isUnsubscribed()) {
+                newPageQuerySubscription.unsubscribe();
             }
         }
     }
