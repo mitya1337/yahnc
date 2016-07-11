@@ -1,9 +1,9 @@
 package mitya.yahnc;
 
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -12,22 +12,23 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import java.io.IOException;
-
 import rx.Observable;
-import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
+    private static final int STORIES_PER_PAGE = 20;
+    private final StoryService.Api storyService = StoryService.getInstance().service;
+
     private RecyclerView recyclerView;
     private StoriesAdapter adapter = new StoriesAdapter();
-    private RecyclerView.LayoutManager layoutManager;
+    private LinearLayoutManager layoutManager;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private Observable<Integer> newStories;
+    private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
     @Nullable
-    private Subscription storiesQuerySubscription;
+    private Subscription newPageQuerySubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,11 +38,16 @@ public class MainActivity extends AppCompatActivity {
         setupSwipeRefreshLayout();
         setupStoriesList();
         getNewStories();
+        addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
     }
 
     private void setupSwipeRefreshLayout() {
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
-        swipeRefreshLayout.setOnRefreshListener(this::getNewStories);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            adapter.clearData();
+            endlessRecyclerOnScrollListener.setCurrentPage(1);
+            addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
+        });
     }
 
     private void setupToolbar() {
@@ -55,22 +61,35 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.addOnScrollListener(endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(layoutManager) {
+            @Override
+            public void onLoadMore(int currentPage) {
+                Log.d("PAGES", "FROM ONLOADMORE  : " + Integer.toString(endlessRecyclerOnScrollListener.getCurrentPage()));
+                addNewPage(currentPage);
+            }
+        });
+    }
+
+    private void addNewPage(int currentPage) {
+        newPageQuerySubscription = newStories.
+                skip(STORIES_PER_PAGE * (currentPage - 1)).
+                take(STORIES_PER_PAGE).
+                flatMap(id -> storyService.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
+                observeOn(AndroidSchedulers.mainThread()).
+                subscribeOn(Schedulers.io()).
+                subscribe(adapter::addStory, error -> {
+                    error.printStackTrace();
+                    swipeRefreshLayout.setRefreshing(false);
+                }, () -> {
+                    swipeRefreshLayout.setRefreshing(false);
+                    endlessRecyclerOnScrollListener.setLoading(false);
+                });
+        Log.d("PAGES", Integer.toString(endlessRecyclerOnScrollListener.getCurrentPage()));
     }
 
     private void getNewStories() {
-        if (storiesQuerySubscription != null) {
-            if (!storiesQuerySubscription.isUnsubscribed()) storiesQuerySubscription.unsubscribe();
-        }
-        adapter.clearData();
-        storiesQuerySubscription = StoryIdsService.getInstance().service.getItems("newstories").
-                subscribeOn(Schedulers.io()).
-                flatMap(integers -> Observable.from(integers).subscribeOn(Schedulers.io())).
-                flatMap(id -> StoryService.getInstance().service.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
-                observeOn(AndroidSchedulers.mainThread()).
-                subscribe(adapter::addStory, error -> {
-                    swipeRefreshLayout.setRefreshing(false);
-                    error.printStackTrace();
-                }, () -> swipeRefreshLayout.setRefreshing(false));
+        newStories = StoryIdsService.getInstance().service.getItems("newstories").
+                flatMap(stories -> Observable.from(stories).subscribeOn(Schedulers.io()));
     }
 
     @Override
@@ -85,7 +104,9 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_refresh:
                 swipeRefreshLayout.setRefreshing(true);
-                getNewStories();
+                adapter.clearData();
+                endlessRecyclerOnScrollListener.setCurrentPage(1);
+                addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -95,9 +116,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if (storiesQuerySubscription != null) {
-            if (!storiesQuerySubscription.isUnsubscribed()) {
-                storiesQuerySubscription.unsubscribe();
+        if (newPageQuerySubscription != null) {
+            if (!newPageQuerySubscription.isUnsubscribed()) {
+                newPageQuerySubscription.unsubscribe();
             }
         }
     }
