@@ -2,13 +2,13 @@ package mitya.yahnc;
 
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 
 /**
  * Created by Mitya on 07.07.2016.
  */
 public abstract class EndlessRecyclerOnScrollListener extends RecyclerView.OnScrollListener {
-    private int previousTotal = 0; // The total number of items in the dataset after the last load
-    private boolean loading = true; // True if we are still waiting for the last set of data to load.
+    private boolean loading = false; // True if we are still waiting for the last set of data to load.
     private int visibleThreshold = 0; // The minimum amount of items to have below your current scroll position before loading more.
     int firstVisibleItem, visibleItemCount, totalItemCount;
 
@@ -16,6 +16,10 @@ public abstract class EndlessRecyclerOnScrollListener extends RecyclerView.OnScr
 
     public void setCurrentPage(int currentPage) {
         this.currentPage = currentPage;
+    }
+
+    public void setLoading(boolean loading) {
+        this.loading = loading;
     }
 
     public int getCurrentPage() {
@@ -35,13 +39,10 @@ public abstract class EndlessRecyclerOnScrollListener extends RecyclerView.OnScr
         visibleItemCount = recyclerView.getChildCount();
         totalItemCount = mLinearLayoutManager.getItemCount();
         firstVisibleItem = mLinearLayoutManager.findFirstVisibleItemPosition();
-
-        if (loading && totalItemCount > previousTotal) {
-            loading = false;
-            previousTotal = totalItemCount;
-        }
         if (!loading
-                && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
+                && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)
+                && totalItemCount != 0
+                && totalItemCount != visibleItemCount) {
             loading = true;
             currentPage++;
             onLoadMore(currentPage);

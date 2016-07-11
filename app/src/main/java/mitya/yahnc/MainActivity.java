@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private StoriesAdapter adapter = new StoriesAdapter();
     private LinearLayoutManager layoutManager;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private Observable<Integer[]> newStories;
+    private Observable<Integer> newStories;
     private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
     @Nullable
     private Subscription newPageQuerySubscription;
@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.addOnScrollListener(endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(layoutManager) {
             @Override
             public void onLoadMore(int currentPage) {
+                Log.d("PAGES", "FROM ONLOADMORE  : " + Integer.toString(endlessRecyclerOnScrollListener.getCurrentPage()));
                 addNewPage(currentPage);
             }
         });
@@ -75,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void addNewPage(int currentPage) {
         newPageQuerySubscription = newStories.
-                flatMap(stories -> Observable.from(stories).subscribeOn(Schedulers.io())).
                 skip(STORIES_PER_PAGE * (currentPage - 1)).
                 take(STORIES_PER_PAGE).
                 flatMap(id -> storyService.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
@@ -84,11 +84,16 @@ public class MainActivity extends AppCompatActivity {
                 subscribe(adapter::addStory, error -> {
                     error.printStackTrace();
                     swipeRefreshLayout.setRefreshing(false);
-                }, () -> swipeRefreshLayout.setRefreshing(false));
+                }, () -> {
+                    swipeRefreshLayout.setRefreshing(false);
+                    endlessRecyclerOnScrollListener.setLoading(false);
+                });
+        Log.d("PAGES", Integer.toString(endlessRecyclerOnScrollListener.getCurrentPage()));
     }
 
     private void getNewStories() {
-        newStories = StoryIdsService.getInstance().service.getItems("newstories");
+        newStories = StoryIdsService.getInstance().service.getItems("newstories").
+                flatMap(stories -> Observable.from(stories).subscribeOn(Schedulers.io()));
     }
 
     @Override
