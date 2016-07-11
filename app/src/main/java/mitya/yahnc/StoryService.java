@@ -10,13 +10,13 @@ import rx.Observable;
 public class StoryService extends RestService<StoryService.Api> {
     private static StoryService instance;
 
-    protected StoryService(Class serviceType) {
-        super(serviceType);
+    private StoryService() {
+        super(StoryService.Api.class);
     }
 
     public static synchronized StoryService getInstance() {
         if (instance == null) {
-            instance = new StoryService(Api.class);
+            instance = new StoryService();
         }
         return instance;
     }
