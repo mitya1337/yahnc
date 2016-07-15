@@ -1,5 +1,6 @@
 package mitya.yahnc;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -11,7 +12,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -21,10 +25,15 @@ public class MainActivity extends AppCompatActivity {
     private static final int STORIES_PER_PAGE = 20;
     private final StoryService.Api storyService = StoryService.getInstance().service;
 
-    private RecyclerView recyclerView;
+    @BindView(R.id.mainRecyclerView)
+    RecyclerView recyclerView;
+    @BindView(R.id.mainToolbar)
+    Toolbar mainToolbar;
+    @BindView(R.id.swiperefresh)
+    SwipeRefreshLayout swipeRefreshLayout;
+
     private StoriesAdapter adapter = new StoriesAdapter();
     private LinearLayoutManager layoutManager;
-    private SwipeRefreshLayout swipeRefreshLayout;
     private Observable<Integer> newStories;
     private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
     @Nullable
@@ -34,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
         setupToolbar();
         setupSwipeRefreshLayout();
         setupStoriesList();
@@ -42,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupSwipeRefreshLayout() {
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
         swipeRefreshLayout.setOnRefreshListener(() -> {
             adapter.clearData();
             endlessRecyclerOnScrollListener.setCurrentPage(1);
@@ -51,13 +60,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupToolbar() {
-        Toolbar mainToolbar = (Toolbar) findViewById(R.id.mainToolbar);
         setSupportActionBar(mainToolbar);
         setTitle(R.string.toolbar_title);
     }
 
     private void setupStoriesList() {
-        recyclerView = (RecyclerView) findViewById(R.id.mainRecyclerView);
         recyclerView.setAdapter(adapter);
         layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
