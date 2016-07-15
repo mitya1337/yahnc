@@ -46,25 +46,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
         this.notifyItemRangeRemoved(0, size);
     }
 
-    public static String formatDate(long time) {
-        Date dateTime = new Date();
-        dateTime.setTime(time * 1000);
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(dateTime);
-        Calendar today = Calendar.getInstance();
-        Calendar yesterday = Calendar.getInstance();
-        yesterday.add(Calendar.DATE, -1);
-        DateFormat timeFormatter = new SimpleDateFormat("hh:mma");
-
-        if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) && calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)) {
-            return "Today " + timeFormatter.format(dateTime);
-        } else if (calendar.get(Calendar.YEAR) == yesterday.get(Calendar.YEAR) && calendar.get(Calendar.DAY_OF_YEAR) == yesterday.get(Calendar.DAY_OF_YEAR)) {
-            return "Yesterday " + timeFormatter.format(dateTime);
-        } else {
-            return dateTime.toString();
-        }
-    }
-
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layout, parent, false);
@@ -93,7 +74,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
             } else {
                 holder.commentsCount.setText(String.format("%d", story.kids.length));
             }
-            holder.timeView.setText(formatDate(story.time));
+            holder.timeView.setText(FormatUtils.formatDate(story.time));
         }
     }
 
