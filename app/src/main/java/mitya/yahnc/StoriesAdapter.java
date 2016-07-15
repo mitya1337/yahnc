@@ -102,15 +102,12 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
 
         @OnClick(R.id.itemBy)
         public void onUserClick(View view) {
-            Intent intent = new Intent(view.getContext(), UserActivity.class);
-            view.getContext().startActivity(intent);
+            UserActivity.startFrom(view.getContext());
         }
 
         @OnClick(R.id.cardView)
         public void onItemClick(View view) {
-            Intent intent = new Intent(view.getContext(), StoryActivity.class);
-            view.getContext().startActivity(intent);
-
+            StoryActivity.startFrom(view.getContext());
         }
     }
 }
