@@ -1,7 +1,6 @@
 package mitya.yahnc;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +8,10 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * Created by Mitya on 23.06.2016.
@@ -33,7 +36,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
     public void clearData() {
         int size = storyList.size();
         storyList.clear();
-        this.notifyItemRangeRemoved(0,size);
+        this.notifyItemRangeRemoved(0, size);
     }
 
     @Override
@@ -45,10 +48,22 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Story story = storyList.get(position);
-        Log.d("TEST",story.title);
-        holder.titleView.setText(story.title);
-        holder.byView.setText(story.by);
-        holder.scoreView.setText(String.format("%d", story.score));
+        if (story != null) {
+            String url = FormatUtils.formatUrl(story.url);
+            if (url == null) {
+                holder.titleView.setText(story.title);
+            } else {
+                holder.titleView.setText(String.format("%s (%s)", story.title, url));
+            }
+            holder.byView.setText(story.by);
+            holder.scoreView.setText(String.format("%d", story.score));
+            if (story.kids == null) {
+                holder.commentsCount.setText(String.format("%d", 0));
+            } else {
+                holder.commentsCount.setText(String.format("%d", story.kids.length));
+            }
+            holder.timeView.setText(FormatUtils.formatDate(story.time, holder.timeView.getContext()));
+        }
     }
 
     @Override
@@ -57,15 +72,30 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView titleView;
-        public TextView byView;
-        public TextView scoreView;
+        @BindView(R.id.itemTitle)
+        TextView titleView;
+        @BindView(R.id.itemBy)
+        TextView byView;
+        @BindView(R.id.itemScore)
+        TextView scoreView;
+        @BindView(R.id.itemCommentsCount)
+        TextView commentsCount;
+        @BindView(R.id.itemTime)
+        TextView timeView;
 
         public ViewHolder(View view) {
             super(view);
-            titleView = (TextView) view.findViewById(R.id.itemTitle);
-            byView = (TextView) view.findViewById(R.id.itemBy);
-            scoreView = (TextView) view.findViewById(R.id.itemScore);
+            ButterKnife.bind(this, view);
+        }
+
+        @OnClick(R.id.itemBy)
+        public void onUserClick(View view) {
+            UserActivity.startFrom(view.getContext());
+        }
+
+        @OnClick(R.id.cardView)
+        public void onItemClick(View view) {
+            StoryActivity.startFrom(view.getContext());
         }
     }
 }
