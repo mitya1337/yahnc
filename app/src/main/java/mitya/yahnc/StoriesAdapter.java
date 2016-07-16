@@ -74,7 +74,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
             } else {
                 holder.commentsCount.setText(String.format("%d", story.kids.length));
             }
-            holder.timeView.setText(FormatUtils.formatDate(story.time));
+            holder.timeView.setText(FormatUtils.formatDate(story.time, holder.timeView.getContext()));
         }
     }
 
