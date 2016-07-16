@@ -20,7 +20,7 @@ public class FormatUtils {
         Calendar today = Calendar.getInstance();
         Calendar yesterday = Calendar.getInstance();
         yesterday.add(Calendar.DATE, -1);
-        DateFormat timeFormatter = new SimpleDateFormat("hh:mma");
+        DateFormat timeFormatter = new SimpleDateFormat("HH:mm");
 
         if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) && calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)) {
             return context.getString(R.string.today) + " " + timeFormatter.format(dateTime);
