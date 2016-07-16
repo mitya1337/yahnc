@@ -1,6 +1,7 @@
 package mitya.yahnc;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -32,6 +33,7 @@ public class FormatUtils {
         }
     }
 
+    @Nullable
     public static String formatUrl(String fullUrl) {
         URL url = null;
         try {
