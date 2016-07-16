@@ -1,19 +1,12 @@
 package mitya.yahnc;
 
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -56,16 +49,11 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
     public void onBindViewHolder(ViewHolder holder, int position) {
         Story story = storyList.get(position);
         if (story != null) {
-            URL url = null;
-            try {
-                url = new URL(story.url);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
+            String url = FormatUtils.formatUrl(story.url);
             if (url == null) {
                 holder.titleView.setText(story.title);
             } else {
-                holder.titleView.setText(String.format("%s (%s)", story.title, url.getHost()));
+                holder.titleView.setText(String.format("%s (%s)", story.title, url));
             }
             holder.byView.setText(story.by);
             holder.scoreView.setText(String.format("%d", story.score));

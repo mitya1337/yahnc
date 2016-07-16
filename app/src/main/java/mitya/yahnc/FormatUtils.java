@@ -1,8 +1,10 @@
 package mitya.yahnc;
 
 import android.content.Context;
-import android.content.res.Resources;
+import android.support.annotation.Nullable;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -28,6 +30,21 @@ public class FormatUtils {
             return context.getString(R.string.yesterday) + " " + timeFormatter.format(dateTime);
         } else {
             return dateTime.toString();
+        }
+    }
+
+    @Nullable
+    public static String formatUrl(String fullUrl) {
+        URL url = null;
+        try {
+            url = new URL(fullUrl);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        if (url != null) {
+            return url.getHost();
+        } else {
+            return null;
         }
     }
 }
