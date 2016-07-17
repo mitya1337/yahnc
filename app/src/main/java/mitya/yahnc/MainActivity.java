@@ -1,5 +1,6 @@
 package mitya.yahnc;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -16,6 +17,7 @@ import butterknife.ButterKnife;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.exceptions.Exceptions;
 import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
@@ -41,11 +43,31 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        setupToolbar();
-        setupSwipeRefreshLayout();
-        setupStoriesList();
-        getNewStories();
-        addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
+        Uri data = getIntent().getData();
+        try {
+            int id = Integer.parseInt(data.getQueryParameter("id"));
+            storyService.getStory(id).subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(story -> StoryActivity.startFrom(this, story));
+        } catch (Exception e) {
+            setupToolbar();
+            setupSwipeRefreshLayout();
+            setupStoriesList();
+            getNewStories();
+            addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
+        }
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        if (newStories == null) {
+            setupToolbar();
+            setupSwipeRefreshLayout();
+            setupStoriesList();
+            getNewStories();
+            addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
+        }
     }
 
     private void setupSwipeRefreshLayout() {
@@ -124,4 +146,5 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
 }
