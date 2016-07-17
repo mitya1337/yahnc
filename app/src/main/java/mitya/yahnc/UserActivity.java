@@ -13,7 +13,7 @@ public class UserActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user);
     }
 
-    public static void startFrom(Context context) {
+    public static void startFrom(Context context, Story story) {
         Intent intent = new Intent(context, UserActivity.class);
         context.startActivity(intent);
     }

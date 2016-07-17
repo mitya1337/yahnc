@@ -23,6 +23,6 @@ public class CommentService extends RestService<CommentService.Api> {
 
     public interface Api {
         @GET("v0/item/{id}.json")
-        Observable<Story> getComment(@Path("id") Integer id);
+        Observable<Comment> getComment(@Path("id") Integer id);
     }
 }
