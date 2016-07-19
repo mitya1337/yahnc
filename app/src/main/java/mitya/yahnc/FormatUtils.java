@@ -1,7 +1,9 @@
 package mitya.yahnc;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.support.annotation.Nullable;
+import android.util.TypedValue;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -46,5 +48,14 @@ public class FormatUtils {
         } else {
             return null;
         }
+    }
+
+    public static int convertFromDpToPx(int dp, Context context) {
+        Resources r = context.getResources();
+        return (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                dp,
+                r.getDisplayMetrics()
+        );
     }
 }

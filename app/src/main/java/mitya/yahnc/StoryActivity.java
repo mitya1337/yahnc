@@ -71,11 +71,10 @@ public class StoryActivity extends AppCompatActivity {
     private void getCommentList(Integer[] commentIds) {
         if (commentIds != null) {
             commentQuerySubscription = Observable.from(commentIds)
-                    .subscribeOn(Schedulers.io())
-                    .flatMap(id -> CommentService.getInstance().service.getComment(id).subscribeOn(Schedulers.io()))
+                    .flatMap(id -> CommentService.getInstance().service.getComment(id))
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.io())
-                    .subscribe(adapter::addComment, error -> {
+                    .subscribe(comment -> adapter.addComment(comment), error -> {
                         error.printStackTrace();
                         swipeRefreshLayout.setRefreshing(false);
                     }, () -> swipeRefreshLayout.setRefreshing(false));
