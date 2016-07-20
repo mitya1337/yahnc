@@ -25,6 +25,7 @@ import rx.schedulers.Schedulers;
 
 public class StoryActivity extends AppCompatActivity {
     private static Story currentStory;
+    private final CommentService.Api commentService = CommentService.getInstance().service;
 
     @BindView(R.id.storyToolbar)
     Toolbar storyToolbar;
@@ -71,8 +72,8 @@ public class StoryActivity extends AppCompatActivity {
 
     private Observable<Comment> getNestedComments(Comment comment, int nestingLevel) {
         if (comment.kids != null) {
-            return Observable.just(comment).concatWith(Observable.from(comment.kids).flatMap(id ->
-                    CommentService.getInstance().service.getComment(id))
+            return Observable.just(comment).concatWith(Observable.from(comment.kids)
+                    .flatMap(commentService::getComment)
                     .flatMap(childComment -> {
                         childComment.nestingLevel = nestingLevel;
                         return getNestedComments(childComment, nestingLevel + 1);
@@ -85,7 +86,7 @@ public class StoryActivity extends AppCompatActivity {
     private void getCommentList(Integer[] commentIds) {
         if (commentIds != null) {
             commentQuerySubscription = Observable.from(commentIds)
-                    .flatMap(id -> CommentService.getInstance().service.getComment(id))
+                    .flatMap(commentService::getComment)
                     .flatMap(comment -> getNestedComments(comment, 1))
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.io())
