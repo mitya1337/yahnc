@@ -2,6 +2,7 @@ package mitya.yahnc;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -68,10 +69,24 @@ public class StoryActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
     }
 
+    private Observable<Comment> getNestedComments(Comment comment, int nestingLevel) {
+        if (comment.kids != null) {
+            return Observable.just(comment).concatWith(Observable.from(comment.kids).flatMap(id ->
+                    CommentService.getInstance().service.getComment(id))
+                    .flatMap(childComment -> {
+                        childComment.nestingLevel = nestingLevel;
+                        return getNestedComments(childComment, nestingLevel + 1);
+                    }));
+        } else {
+            return Observable.just(comment);
+        }
+    }
+
     private void getCommentList(Integer[] commentIds) {
         if (commentIds != null) {
             commentQuerySubscription = Observable.from(commentIds)
                     .flatMap(id -> CommentService.getInstance().service.getComment(id))
+                    .flatMap(comment -> getNestedComments(comment, 1))
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.io())
                     .subscribe(comment -> adapter.addComment(comment), error -> {
