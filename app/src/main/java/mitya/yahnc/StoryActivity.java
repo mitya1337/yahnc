@@ -24,6 +24,8 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class StoryActivity extends AppCompatActivity {
+    public static final String EXTRA_STORY = "Story";
+
     private Story currentStory;
     private final CommentService.Api commentService = CommentService.getInstance().service;
 
@@ -47,16 +49,20 @@ public class StoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story);
         ButterKnife.bind(this);
-        currentStory = getIntent().getParcelableExtra("Story");
-        setupToolbar(currentStory.title);
-        setupSwipeRefreshLayout();
-        setupCommentList();
-        getCommentList(currentStory.kids);
+        currentStory = getIntent().getParcelableExtra(EXTRA_STORY);
+        if (currentStory != null) {
+            setupToolbar(currentStory.title);
+            setupSwipeRefreshLayout();
+            setupCommentList();
+            getCommentList(currentStory.kids);
+        } else {
+            Toast.makeText(this, "Story is null", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public static void startFrom(Context context, Story story) {
         Intent intent = new Intent(context, StoryActivity.class);
-        intent.putExtra("Story", story);
+        intent.putExtra(EXTRA_STORY, story);
         context.startActivity(intent);
     }
 
