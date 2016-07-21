@@ -2,6 +2,7 @@ package mitya.yahnc;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -23,7 +24,8 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class StoryActivity extends AppCompatActivity {
-    private static Story currentStory;
+    private Story currentStory;
+    private final CommentService.Api commentService = CommentService.getInstance().service;
 
     @BindView(R.id.storyToolbar)
     Toolbar storyToolbar;
@@ -45,6 +47,7 @@ public class StoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story);
         ButterKnife.bind(this);
+        currentStory = getIntent().getParcelableExtra("Story");
         setupToolbar(currentStory.title);
         setupSwipeRefreshLayout();
         setupCommentList();
@@ -53,7 +56,7 @@ public class StoryActivity extends AppCompatActivity {
 
     public static void startFrom(Context context, Story story) {
         Intent intent = new Intent(context, StoryActivity.class);
-        currentStory = story;
+        intent.putExtra("Story", story);
         context.startActivity(intent);
     }
 
@@ -68,14 +71,27 @@ public class StoryActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
     }
 
+    private Observable<Comment> getNestedComments(Comment comment, int nestingLevel) {
+        if (comment.kids != null) {
+            return Observable.just(comment).concatWith(Observable.from(comment.kids)
+                    .flatMap(commentService::getComment)
+                    .flatMap(childComment -> {
+                        childComment.nestingLevel = nestingLevel;
+                        return getNestedComments(childComment, nestingLevel + 1);
+                    }));
+        } else {
+            return Observable.just(comment);
+        }
+    }
+
     private void getCommentList(Integer[] commentIds) {
         if (commentIds != null) {
             commentQuerySubscription = Observable.from(commentIds)
-                    .subscribeOn(Schedulers.io())
-                    .flatMap(id -> CommentService.getInstance().service.getComment(id).subscribeOn(Schedulers.io()))
+                    .flatMap(commentService::getComment)
+                    .flatMap(comment -> getNestedComments(comment, 1))
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.io())
-                    .subscribe(adapter::addComment, error -> {
+                    .subscribe(comment -> adapter.addComment(comment), error -> {
                         error.printStackTrace();
                         swipeRefreshLayout.setRefreshing(false);
                     }, () -> swipeRefreshLayout.setRefreshing(false));
