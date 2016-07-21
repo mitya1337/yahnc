@@ -24,7 +24,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class StoryActivity extends AppCompatActivity {
-    private static Story currentStory;
+    private Story currentStory;
     private final CommentService.Api commentService = CommentService.getInstance().service;
 
     @BindView(R.id.storyToolbar)
@@ -47,6 +47,7 @@ public class StoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story);
         ButterKnife.bind(this);
+        currentStory = getIntent().getParcelableExtra("Story");
         setupToolbar(currentStory.title);
         setupSwipeRefreshLayout();
         setupCommentList();
@@ -55,7 +56,7 @@ public class StoryActivity extends AppCompatActivity {
 
     public static void startFrom(Context context, Story story) {
         Intent intent = new Intent(context, StoryActivity.class);
-        currentStory = story;
+        intent.putExtra("Story", story);
         context.startActivity(intent);
     }
 
