@@ -1,5 +1,6 @@
 package mitya.yahnc;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -17,7 +18,6 @@ import butterknife.ButterKnife;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.exceptions.Exceptions;
 import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
@@ -43,13 +43,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        Uri data = getIntent().getData();
-        try {
-            int id = Integer.parseInt(data.getQueryParameter("id"));
+        if (getData(getIntent()) != null && getQueryParameter(getData(getIntent())) != null) {
+            Uri data = getData(getIntent());
+            Integer id = Integer.parseInt(data.getQueryParameter("id"));
             storyService.getStory(id).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(story -> StoryActivity.startFrom(this, story));
-        } catch (Exception e) {
+                    .subscribe(story -> StoryActivity.startWith(this, story), Throwable::printStackTrace);
+        } else {
             setupToolbar();
             setupSwipeRefreshLayout();
             setupStoriesList();
@@ -67,6 +67,22 @@ public class MainActivity extends AppCompatActivity {
             setupStoriesList();
             getNewStories();
             addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
+        }
+    }
+
+    private Uri getData(Intent intent) {
+        if (intent.getData() != null) {
+            return intent.getData();
+        } else return null;
+    }
+
+    private Integer getQueryParameter(Uri data) {
+        try {
+            if (data.getQueryParameter("id") != null) {
+                return Integer.parseInt(data.getQueryParameter("id"));
+            } else return null;
+        } catch (NullPointerException e) {
+            return null;
         }
     }
 

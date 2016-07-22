@@ -60,7 +60,7 @@ public class StoryActivity extends AppCompatActivity {
         }
     }
 
-    public static void startFrom(Context context, Story story) {
+    public static void startWith(Context context, Story story) {
         Intent intent = new Intent(context, StoryActivity.class);
         intent.putExtra(EXTRA_STORY, story);
         context.startActivity(intent);
