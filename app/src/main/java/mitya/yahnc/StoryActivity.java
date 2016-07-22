@@ -39,7 +39,7 @@ public class StoryActivity extends AppCompatActivity {
     SwipeRefreshLayout swipeRefreshLayout;
 
     private LinearLayoutManager layoutManager;
-    private CommentsAdapter adapter = new CommentsAdapter();
+    private final CommentsAdapter adapter = new CommentsAdapter();
 
     @Nullable
     private Subscription commentQuerySubscription;
