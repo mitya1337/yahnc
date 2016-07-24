@@ -42,8 +42,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        if (getIntent().getData() != null && getQueryParameter(getIntent().getData()) != null) {
-            Uri data = getIntent().getData();
+        Uri data = getIntent().getData();
+        if (data != null && data.getQueryParameter("id") != null) {
             Integer id = Integer.parseInt(data.getQueryParameter("id"));
             storyService.getStory(id).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -66,16 +66,6 @@ public class MainActivity extends AppCompatActivity {
             setupStoriesList();
             getNewStories();
             addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
-        }
-    }
-
-    private Integer getQueryParameter(Uri data) {
-        try {
-            if (data.getQueryParameter("id") != null) {
-                return Integer.parseInt(data.getQueryParameter("id"));
-            } else return null;
-        } catch (NullPointerException e) {
-            return null;
         }
     }
 
