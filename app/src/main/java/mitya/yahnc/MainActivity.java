@@ -7,7 +7,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -69,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.addOnScrollListener(endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(layoutManager) {
             @Override
             public void onLoadMore(int currentPage) {
-                Log.d("PAGES", "FROM ONLOADMORE  : " + Integer.toString(endlessRecyclerOnScrollListener.getCurrentPage()));
                 addNewPage(currentPage);
             }
         });
@@ -89,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
                     swipeRefreshLayout.setRefreshing(false);
                     endlessRecyclerOnScrollListener.setLoading(false);
                 });
-        Log.d("PAGES", Integer.toString(endlessRecyclerOnScrollListener.getCurrentPage()));
     }
 
     private void getNewStories() {

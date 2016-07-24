@@ -1,5 +1,6 @@
 package mitya.yahnc;
 
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,7 +12,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 /**
  * Created by Mitya on 23.06.2016.
@@ -63,6 +63,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
                 holder.commentsCount.setText(String.format("%d", story.kids.length));
             }
             holder.timeView.setText(FormatUtils.formatDate(story.time, holder.timeView.getContext()));
+            holder.cardView.setOnClickListener(view -> StoryActivity.startFrom(view.getContext(), story));
+            holder.byView.setOnClickListener(view -> UserActivity.startFrom(view.getContext(), story));
         }
     }
 
@@ -82,20 +84,12 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
         TextView commentsCount;
         @BindView(R.id.itemTime)
         TextView timeView;
+        @BindView(R.id.cardView)
+        CardView cardView;
 
         public ViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
-        }
-
-        @OnClick(R.id.itemBy)
-        public void onUserClick(View view) {
-            UserActivity.startFrom(view.getContext());
-        }
-
-        @OnClick(R.id.cardView)
-        public void onItemClick(View view) {
-            StoryActivity.startFrom(view.getContext());
         }
     }
 }

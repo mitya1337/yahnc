@@ -1,9 +1,12 @@
 package mitya.yahnc;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by Mitya on 23.06.2016.
  */
-public class Story {
+public class Story implements Parcelable {
     public final String by;
     public final String title;
     public final String url;
@@ -12,9 +15,9 @@ public class Story {
     public final int descendants;
     public final int score;
     public final long time;
-    public final int[] kids;
+    public final Integer[] kids;
 
-    public Story(String by, Integer descendants, Integer id, int[] kids, Integer score, long time, String title, String type, String url) {
+    public Story(String by, Integer descendants, Integer id, Integer[] kids, Integer score, long time, String title, String type, String url) {
         this.by = by;
         this.descendants = descendants;
         this.id = id;
@@ -24,5 +27,57 @@ public class Story {
         this.title = title;
         this.type = type;
         this.url = url;
+    }
+
+    protected Story(Parcel in) {
+        by = in.readString();
+        title = in.readString();
+        url = in.readString();
+        type = in.readString();
+        id = in.readInt();
+        descendants = in.readInt();
+        score = in.readInt();
+        time = in.readLong();
+        int[] intKids = new int[in.readInt()];
+        in.readIntArray(intKids);
+        kids = new Integer[intKids.length];
+        for (int i = 0; i < intKids.length; i++) {
+            kids[i] = intKids[i];
+        }
+    }
+
+    public static final Creator<Story> CREATOR = new Creator<Story>() {
+        @Override
+        public Story createFromParcel(Parcel in) {
+            return new Story(in);
+        }
+
+        @Override
+        public Story[] newArray(int size) {
+            return new Story[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(by);
+        dest.writeString(title);
+        dest.writeString(url);
+        dest.writeString(type);
+        dest.writeInt(id);
+        dest.writeInt(descendants);
+        dest.writeInt(score);
+        dest.writeLong(time);
+        dest.writeInt(kids.length);
+        int[] intKids = new int[kids.length];
+        for (int i = 0; i < kids.length; i++) {
+            intKids[i] = kids[i];
+        }
+        dest.writeIntArray(intKids);
     }
 }
