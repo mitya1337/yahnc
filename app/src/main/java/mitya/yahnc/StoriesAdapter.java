@@ -63,8 +63,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
                 holder.commentsCount.setText(String.format("%d", story.kids.length));
             }
             holder.timeView.setText(FormatUtils.formatDate(story.time, holder.timeView.getContext()));
-            holder.cardView.setOnClickListener(view -> StoryActivity.startFrom(view.getContext(), story));
-            holder.byView.setOnClickListener(view -> UserActivity.startFrom(view.getContext(), story));
+            holder.cardView.setOnClickListener(view -> StoryActivity.startWith(view.getContext(), story));
+            holder.byView.setOnClickListener(view -> UserActivity.startWith(view.getContext(), story));
         }
     }
 

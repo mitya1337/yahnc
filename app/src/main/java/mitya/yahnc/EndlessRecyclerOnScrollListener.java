@@ -2,7 +2,6 @@ package mitya.yahnc;
 
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 
 /**
  * Created by Mitya on 07.07.2016.

@@ -1,5 +1,6 @@
 package mitya.yahnc;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -41,11 +42,31 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        setupToolbar();
-        setupSwipeRefreshLayout();
-        setupStoriesList();
-        getNewStories();
-        addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
+        Uri data = getIntent().getData();
+        if (data != null && data.getQueryParameter("id") != null) {
+            Integer id = Integer.parseInt(data.getQueryParameter("id"));
+            storyService.getStory(id).subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(story -> StoryActivity.startWith(this, story), Throwable::printStackTrace);
+        } else {
+            setupToolbar();
+            setupSwipeRefreshLayout();
+            setupStoriesList();
+            getNewStories();
+            addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
+        }
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        if (newStories == null) {
+            setupToolbar();
+            setupSwipeRefreshLayout();
+            setupStoriesList();
+            getNewStories();
+            addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
+        }
     }
 
     private void setupSwipeRefreshLayout() {
@@ -83,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
                 subscribe(adapter::addStory, error -> {
                     error.printStackTrace();
                     swipeRefreshLayout.setRefreshing(false);
+                    endlessRecyclerOnScrollListener.setLoading(false);
                 }, () -> {
                     swipeRefreshLayout.setRefreshing(false);
                     endlessRecyclerOnScrollListener.setLoading(false);
@@ -118,10 +140,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
+        endlessRecyclerOnScrollListener.setLoading(false);
         if (newPageQuerySubscription != null) {
             if (!newPageQuerySubscription.isUnsubscribed()) {
                 newPageQuerySubscription.unsubscribe();
             }
         }
     }
+
 }
