@@ -1,6 +1,5 @@
 package mitya.yahnc;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -43,8 +42,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        if (getData(getIntent()) != null && getQueryParameter(getData(getIntent())) != null) {
-            Uri data = getData(getIntent());
+        if (getIntent().getData() != null && getQueryParameter(getIntent().getData()) != null) {
+            Uri data = getIntent().getData();
             Integer id = Integer.parseInt(data.getQueryParameter("id"));
             storyService.getStory(id).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -68,12 +67,6 @@ public class MainActivity extends AppCompatActivity {
             getNewStories();
             addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
         }
-    }
-
-    private Uri getData(Intent intent) {
-        if (intent.getData() != null) {
-            return intent.getData();
-        } else return null;
     }
 
     private Integer getQueryParameter(Uri data) {
@@ -121,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
                 subscribe(adapter::addStory, error -> {
                     error.printStackTrace();
                     swipeRefreshLayout.setRefreshing(false);
+                    endlessRecyclerOnScrollListener.setLoading(false);
                 }, () -> {
                     swipeRefreshLayout.setRefreshing(false);
                     endlessRecyclerOnScrollListener.setLoading(false);
@@ -156,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
+        endlessRecyclerOnScrollListener.setLoading(false);
         if (newPageQuerySubscription != null) {
             if (!newPageQuerySubscription.isUnsubscribed()) {
                 newPageQuerySubscription.unsubscribe();
