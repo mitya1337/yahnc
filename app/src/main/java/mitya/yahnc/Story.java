@@ -38,12 +38,15 @@ public class Story implements Parcelable {
         descendants = in.readInt();
         score = in.readInt();
         time = in.readLong();
-        int[] intKids = new int[in.readInt()];
-        in.readIntArray(intKids);
-        kids = new Integer[intKids.length];
-        for (int i = 0; i < intKids.length; i++) {
-            kids[i] = intKids[i];
-        }
+        int kidsLength = in.readInt();
+        if (kidsLength != 0) {
+            int[] intKids = new int[kidsLength];
+            in.readIntArray(intKids);
+            kids = new Integer[intKids.length];
+            for (int i = 0; i < intKids.length; i++) {
+                kids[i] = intKids[i];
+            }
+        } else kids = null;
     }
 
     public static final Creator<Story> CREATOR = new Creator<Story>() {
@@ -73,11 +76,15 @@ public class Story implements Parcelable {
         dest.writeInt(descendants);
         dest.writeInt(score);
         dest.writeLong(time);
-        dest.writeInt(kids.length);
-        int[] intKids = new int[kids.length];
-        for (int i = 0; i < kids.length; i++) {
-            intKids[i] = kids[i];
+        if (kids != null) {
+            dest.writeInt(kids.length);
+            int[] intKids = new int[kids.length];
+            for (int i = 0; i < kids.length; i++) {
+                intKids[i] = kids[i];
+            }
+            dest.writeIntArray(intKids);
+        } else {
+            dest.writeInt(0);
         }
-        dest.writeIntArray(intKids);
     }
 }

@@ -16,6 +16,8 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.w3c.dom.Text;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import rx.Observable;
@@ -31,12 +33,20 @@ public class StoryActivity extends AppCompatActivity {
 
     @BindView(R.id.storyToolbar)
     Toolbar storyToolbar;
-    @BindView(R.id.toolbarTitle)
-    TextView toolbarTitle;
     @BindView(R.id.storyRecyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.storySwiperefresh)
     SwipeRefreshLayout swipeRefreshLayout;
+    @BindView(R.id.storyBy)
+    TextView storyByView;
+    @BindView(R.id.storyTitle)
+    TextView storyTitleView;
+    @BindView(R.id.storyTime)
+    TextView storyTimeView;
+    @BindView(R.id.storyScore)
+    TextView storyScoreView;
+    @BindView(R.id.storyCommentsCount)
+    TextView storyCommentsCount;
 
     private LinearLayoutManager layoutManager;
     private final CommentsAdapter adapter = new CommentsAdapter();
@@ -51,7 +61,8 @@ public class StoryActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         currentStory = getIntent().getParcelableExtra(EXTRA_STORY);
         if (currentStory != null) {
-            setupToolbar(currentStory.title);
+            setupStoryInfo();
+            setupToolbar();
             setupSwipeRefreshLayout();
             setupCommentList();
             getCommentList(currentStory.kids);
@@ -66,9 +77,26 @@ public class StoryActivity extends AppCompatActivity {
         context.startActivity(intent);
     }
 
-    private void setupToolbar(String title) {
+    private void setupToolbar() {
         setSupportActionBar(storyToolbar);
-        toolbarTitle.setText(title);
+        setTitle(R.string.story_toolbar_title);
+    }
+
+    private void setupStoryInfo() {
+        String url = FormatUtils.formatUrl(currentStory.url);
+        if (url == null) {
+            storyTitleView.setText(currentStory.title);
+        } else {
+            storyTitleView.setText(String.format("%s (%s)", currentStory.title, url));
+        }
+        storyByView.setText(currentStory.by);
+        storyScoreView.setText(String.format("%d", currentStory.score));
+        if (currentStory.kids == null) {
+            storyCommentsCount.setText(String.format("%d", 0));
+        } else {
+            storyCommentsCount.setText(String.format("%d", currentStory.kids.length));
+        }
+        storyTimeView.setText(FormatUtils.formatDate(currentStory.time, storyTimeView.getContext()));
     }
 
     private void setupCommentList() {
@@ -94,9 +122,9 @@ public class StoryActivity extends AppCompatActivity {
         if (commentIds != null) {
             commentQuerySubscription = Observable.from(commentIds)
                     .flatMap(commentService::getComment)
+                    .subscribeOn(Schedulers.io())
                     .flatMap(comment -> getNestedComments(comment, 1))
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeOn(Schedulers.io())
                     .subscribe(comment -> adapter.addComment(comment), error -> {
                         error.printStackTrace();
                         swipeRefreshLayout.setRefreshing(false);
