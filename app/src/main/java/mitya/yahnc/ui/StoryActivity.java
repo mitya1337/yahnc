@@ -1,8 +1,7 @@
-package mitya.yahnc;
+package mitya.yahnc.ui;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -16,10 +15,13 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import mitya.yahnc.network.CommentService;
+import mitya.yahnc.utils.FormatUtils;
+import mitya.yahnc.R;
+import mitya.yahnc.domain.Comment;
+import mitya.yahnc.domain.Story;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -29,7 +31,7 @@ public class StoryActivity extends AppCompatActivity {
     public static final String EXTRA_STORY = "Story";
 
     private Story currentStory;
-    private final CommentService.Api commentService = CommentService.getInstance().service;
+    private final CommentService.Api commentService = CommentService.getInstance().getService();
 
     @BindView(R.id.storyToolbar)
     Toolbar storyToolbar;

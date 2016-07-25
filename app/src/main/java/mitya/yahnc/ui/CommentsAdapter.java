@@ -1,4 +1,4 @@
-package mitya.yahnc;
+package mitya.yahnc.ui;
 
 import android.content.Context;
 import android.support.v7.widget.CardView;
@@ -14,6 +14,9 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import mitya.yahnc.utils.FormatUtils;
+import mitya.yahnc.R;
+import mitya.yahnc.domain.Comment;
 
 /**
  * Created by Mitya on 17.07.2016.

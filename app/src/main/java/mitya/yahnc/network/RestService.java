@@ -1,5 +1,6 @@
-package mitya.yahnc;
+package mitya.yahnc.network;
 
+import mitya.yahnc.BuildConfig;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -21,5 +22,9 @@ public abstract class RestService<T> {
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .build();
         service = retrofit.create(serviceType);
+    }
+
+    public T getService() {
+        return service;
     }
 }

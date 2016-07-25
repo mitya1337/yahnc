@@ -1,4 +1,4 @@
-package mitya.yahnc;
+package mitya.yahnc.domain;
 
 /**
  * Created by Mitya on 16.07.2016.

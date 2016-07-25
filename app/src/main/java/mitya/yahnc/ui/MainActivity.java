@@ -1,4 +1,4 @@
-package mitya.yahnc;
+package mitya.yahnc.ui;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,6 +14,10 @@ import android.view.MenuItem;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import mitya.yahnc.R;
+import mitya.yahnc.network.StoryIdsService;
+import mitya.yahnc.network.StoryService;
+import mitya.yahnc.domain.Story;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -21,7 +25,7 @@ import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
     private static final int STORIES_PER_PAGE = 20;
-    private final StoryService.Api storyService = StoryService.getInstance().service;
+    private final StoryService.Api storyService = StoryService.getInstance().getService();
 
     @BindView(R.id.mainRecyclerView)
     RecyclerView recyclerView;
@@ -112,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getNewStories() {
-        newStories = StoryIdsService.getInstance().service.getItems("newstories").
+        newStories = StoryIdsService.getInstance().getService().getItems("newstories").
                 flatMap(stories -> Observable.from(stories).subscribeOn(Schedulers.io()));
     }
 
