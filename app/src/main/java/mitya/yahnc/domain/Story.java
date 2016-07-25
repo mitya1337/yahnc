@@ -1,4 +1,4 @@
-package mitya.yahnc;
+package mitya.yahnc.domain;
 
 import android.os.Parcel;
 import android.os.Parcelable;

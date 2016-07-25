@@ -1,4 +1,4 @@
-package mitya.yahnc;
+package mitya.yahnc.utils;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -11,6 +11,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+
+import mitya.yahnc.R;
 
 /**
  * Created by Mitya on 16.07.2016.

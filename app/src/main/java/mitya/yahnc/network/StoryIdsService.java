@@ -1,4 +1,4 @@
-package mitya.yahnc;
+package mitya.yahnc.network;
 
 import retrofit2.http.GET;
 import retrofit2.http.Path;

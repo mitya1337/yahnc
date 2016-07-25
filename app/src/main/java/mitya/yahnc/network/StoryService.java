@@ -1,5 +1,6 @@
-package mitya.yahnc;
+package mitya.yahnc.network;
 
+import mitya.yahnc.domain.Story;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 import rx.Observable;
