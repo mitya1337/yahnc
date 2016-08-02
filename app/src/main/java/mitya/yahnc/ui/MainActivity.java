@@ -11,10 +11,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import mitya.yahnc.R;
+import mitya.yahnc.db.DbHelper;
+import mitya.yahnc.db.StoriesRepository;
 import mitya.yahnc.network.StoryIdsService;
 import mitya.yahnc.network.StoryService;
 import mitya.yahnc.domain.Story;
@@ -134,8 +137,19 @@ public class MainActivity extends AppCompatActivity {
                 swipeRefreshLayout.setRefreshing(true);
                 adapter.clearData();
                 endlessRecyclerOnScrollListener.setCurrentPage(1);
+                endlessRecyclerOnScrollListener.setLoading(false);
                 addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
                 return true;
+            case R.id.action_show_saved_stories:
+                adapter.clearData();
+                DbHelper dbHelper = new DbHelper(this);
+                StoriesRepository storiesRepository = new StoriesRepository(dbHelper);
+                adapter.addStories(storiesRepository.readAllStories());
+                endlessRecyclerOnScrollListener.setLoading(true);
+                return true;
+            case R.id.action_clear_saved_stories:
+                // TODO : clear story list
+                Toast.makeText(this, "Database cleared", Toast.LENGTH_SHORT).show();
             default:
                 return super.onOptionsItemSelected(item);
         }

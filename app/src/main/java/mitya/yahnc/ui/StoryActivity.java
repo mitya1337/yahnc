@@ -17,6 +17,9 @@ import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import mitya.yahnc.db.CommentsRepository;
+import mitya.yahnc.db.DbHelper;
+import mitya.yahnc.db.StoriesRepository;
 import mitya.yahnc.network.CommentService;
 import mitya.yahnc.utils.FormatUtils;
 import mitya.yahnc.R;
@@ -52,6 +55,8 @@ public class StoryActivity extends AppCompatActivity {
 
     private LinearLayoutManager layoutManager;
     private final CommentsAdapter adapter = new CommentsAdapter();
+    private StoriesRepository storiesRepository;
+    private CommentsRepository commentsRepository;
 
     @Nullable
     private Subscription commentQuerySubscription;
@@ -61,13 +66,18 @@ public class StoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story);
         ButterKnife.bind(this);
+        setupDatabase();
         currentStory = getIntent().getParcelableExtra(EXTRA_STORY);
         if (currentStory != null) {
             setupStoryInfo();
             setupToolbar();
             setupSwipeRefreshLayout();
             setupCommentList();
-            getCommentList(currentStory.kids);
+            if (storiesRepository.readStory(currentStory.id) != null) {
+                adapter.addComments(commentsRepository.readAllComments(currentStory.id));
+            } else {
+                getCommentList(currentStory.kids);
+            }
         } else {
             Toast.makeText(this, "Story is null", Toast.LENGTH_SHORT).show();
         }
@@ -127,7 +137,7 @@ public class StoryActivity extends AppCompatActivity {
                     .subscribeOn(Schedulers.io())
                     .flatMap(comment -> getNestedComments(comment, 1))
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(comment -> adapter.addComment(comment), error -> {
+                    .subscribe(adapter::addComment, error -> {
                         error.printStackTrace();
                         swipeRefreshLayout.setRefreshing(false);
                     }, () -> swipeRefreshLayout.setRefreshing(false));
@@ -144,10 +154,16 @@ public class StoryActivity extends AppCompatActivity {
         });
     }
 
+    private void setupDatabase() {
+        DbHelper dbHelper = new DbHelper(this);
+        storiesRepository = new StoriesRepository(dbHelper);
+        commentsRepository = new CommentsRepository(dbHelper);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.toolbar, menu);
+        inflater.inflate(R.menu.story_toolbar, menu);
         return true;
     }
 
@@ -158,6 +174,13 @@ public class StoryActivity extends AppCompatActivity {
                 swipeRefreshLayout.setRefreshing(true);
                 adapter.clearData();
                 getCommentList(currentStory.kids);
+                return true;
+            case R.id.action_save_story:
+                storiesRepository.createStory(currentStory);
+                for (Comment comment : adapter.getCommentList()) {
+                    commentsRepository.createComment(comment, currentStory.id);
+                }
+                Toast.makeText(this, "Story saved", Toast.LENGTH_SHORT).show();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

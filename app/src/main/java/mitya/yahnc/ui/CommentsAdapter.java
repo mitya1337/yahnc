@@ -48,6 +48,10 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
         this.notifyItemRangeRemoved(0, size);
     }
 
+    public List<Comment> getCommentList() {
+        return commentList;
+    }
+
     private void setMargin(CardView view, Context context, int childLevel) {
         CardView.LayoutParams layoutParams = new CardView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);

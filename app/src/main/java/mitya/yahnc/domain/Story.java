@@ -17,7 +17,7 @@ public class Story implements Parcelable {
     public final long time;
     public final Integer[] kids;
 
-    public Story(String by, Integer descendants, Integer id, Integer[] kids, Integer score, long time, String title, String type, String url) {
+    public Story(Integer id, String by, String title, String url, Integer descendants, Integer score, long time, Integer[] kids, String type) {
         this.by = by;
         this.descendants = descendants;
         this.id = id;

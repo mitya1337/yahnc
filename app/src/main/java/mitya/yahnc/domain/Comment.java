@@ -13,7 +13,7 @@ public class Comment {
     public final String type;
     public int nestingLevel;
 
-    public Comment(String by, int id, Integer[] kids, int parent, String text, long time, String type) {
+    public Comment(int id,String by,  Integer[] kids, int parent, String text, long time, String type) {
         this.by = by;
         this.id = id;
         this.kids = kids;

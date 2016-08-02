@@ -60,4 +60,17 @@ public class FormatUtils {
                 r.getDisplayMetrics()
         );
     }
+
+    public static Integer[] stringToArray(String string) {
+        String[] strings = string.replace("[", "").replace("]", "").split(", ");
+        Integer[] result = new Integer[strings.length];
+        if (strings[0].equals("null")) {
+            return null;
+        } else {
+            for (int i = 0; i < result.length; i++) {
+                result[i] = Integer.parseInt(strings[i]);
+            }
+            return result;
+        }
+    }
 }
