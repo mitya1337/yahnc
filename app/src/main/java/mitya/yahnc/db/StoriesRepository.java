@@ -3,6 +3,7 @@ package mitya.yahnc.db;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +43,7 @@ public class StoriesRepository {
         db.close();
     }
 
+    @Nullable
     public Story readStory(Integer id) {
         db = dbHelper.getReadableDatabase();
         Cursor cursor = db.query(FeedStory.STORY_TABLE_NAME, null, SELECTION, new String[]{Integer.toString(id)}, null, null, null);
