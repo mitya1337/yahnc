@@ -48,7 +48,6 @@ public class StoriesRepository {
         db = dbHelper.getReadableDatabase();
         Cursor cursor = db.query(FeedStory.STORY_TABLE_NAME, null, SELECTION, new String[]{Integer.toString(id)}, null, null, null);
         if (cursor.moveToFirst()) {
-
             Story story = new Story(cursor.getInt(0), cursor.getString(1), cursor.getString(2)
                     , cursor.getString(3), cursor.getInt(4), cursor.getInt(5), Long.parseLong(cursor.getString(6))
                     , FormatUtils.stringToArray(cursor.getString(7)), "story");
@@ -64,7 +63,7 @@ public class StoriesRepository {
 
     public List<Story> readAllStories() {
         db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.query(FeedStory.STORY_TABLE_NAME, null, null, null, null, null, null);
+        Cursor cursor = db.query(FeedStory.STORY_TABLE_NAME, null, null, null, null, null, FeedStory.COLUMN_NAME_ID + " DESC");
         List<Story> stories = new ArrayList<>();
         if (cursor.moveToFirst()) {
             do {

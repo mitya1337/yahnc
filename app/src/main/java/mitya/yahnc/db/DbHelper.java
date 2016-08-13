@@ -15,18 +15,19 @@ public class DbHelper extends SQLiteOpenHelper {
 
     private static final String CREATE_TABLE_STORIES = "CREATE TABLE "
             + FeedStory.STORY_TABLE_NAME + " ( "
-            + FeedStory.COLUMN_NAME_STORY_ID + " INTEGER PRIMARY KEY NOT NULL , "
+            + FeedStory.COLUMN_NAME_STORY_ID + " INTEGER NOT NULL , "
             + FeedStory.COLUMN_NAME_STORY_BY + " TEXT NOT NULL , "
             + FeedStory.COLUMN_NAME_STORY_TITLE + " TEXT NOT NULL , "
             + FeedStory.COLUMN_NAME_STORY_URL + " TEXT , "
             + FeedStory.COLUMN_NAME_STORY_DESCENDANTS + " INTEGER , "
             + FeedStory.COLUMN_NAME_STORY_SCORE + " INTEGER , "
             + FeedStory.COLUMN_NAME_STORY_TIME + " TEXT , "
-            + FeedStory.COLUMN_NAME_STORY_KIDS + " TEXT );";
+            + FeedStory.COLUMN_NAME_STORY_KIDS + " TEXT , "
+            + FeedStory.COLUMN_NAME_ID + " INTEGER PRIMARY KEY AUTOINCREMENT );";
 
     private static final String CREATE_TABLE_COMMENTS = "CREATE TABLE "
             + FeedComment.COMMENTS_TABLE_NAME + " ( "
-            + FeedComment.COLUMN_NAME_COMMENT_ID + " INTEGER PRIMARY KEY NOT NULL , "
+            + FeedComment.COLUMN_NAME_COMMENT_ID + " INTEGER NOT NULL , "
             + FeedComment.COLUMN_NAME_STORY_ID + " INTEGER NOT NULL , "
             + FeedComment.COLUMN_NAME_COMMENT_BY + " TEXT NOT NULL , "
             + FeedComment.COLUMN_NAME_COMMENT_KIDS + " TEXT , "
@@ -34,6 +35,7 @@ public class DbHelper extends SQLiteOpenHelper {
             + FeedComment.COLUMN_NAME_COMMENT_TEXT + " TEXT , "
             + FeedComment.COLUMN_NAME_COMMENT_TIME + " TEXT , "
             + FeedComment.COLUMN_NAME_COMMENT_NESTINGLEVEL + " INTEGER , "
+            + FeedComment.COLUMN_NAME_ID + " INTEGER PRIMARY KEY AUTOINCREMENT , "
             + "FOREIGN KEY(" + FeedComment.COLUMN_NAME_STORY_ID + ") "
             + "REFERENCES " + FeedStory.STORY_TABLE_NAME
             + "(" + FeedStory.COLUMN_NAME_STORY_ID + "));";
@@ -63,7 +65,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public static abstract class FeedStory implements BaseColumns {
         public static final String STORY_TABLE_NAME = "story";
-        public static final String COLUMN_NAME_STORY_ID = "id";
+        public static final String COLUMN_NAME_STORY_ID = "story_id";
         public static final String COLUMN_NAME_STORY_BY = "by";
         public static final String COLUMN_NAME_STORY_TITLE = "title";
         public static final String COLUMN_NAME_STORY_URL = "url";
@@ -71,11 +73,12 @@ public class DbHelper extends SQLiteOpenHelper {
         public static final String COLUMN_NAME_STORY_SCORE = "score";
         public static final String COLUMN_NAME_STORY_TIME = "time";
         public static final String COLUMN_NAME_STORY_KIDS = "kids";
+        public static final String COLUMN_NAME_ID = "id";
     }
 
     public static abstract class FeedComment implements BaseColumns {
         public static final String COMMENTS_TABLE_NAME = "comment";
-        public static final String COLUMN_NAME_COMMENT_ID = "id";
+        public static final String COLUMN_NAME_COMMENT_ID = "comment_id";
         public static final String COLUMN_NAME_COMMENT_BY = "by";
         public static final String COLUMN_NAME_COMMENT_KIDS = "kids";
         public static final String COLUMN_NAME_COMMENT_PARENT = "parent";
@@ -83,5 +86,6 @@ public class DbHelper extends SQLiteOpenHelper {
         public static final String COLUMN_NAME_COMMENT_TIME = "time";
         public static final String COLUMN_NAME_COMMENT_NESTINGLEVEL = "nestingLevel";
         public static final String COLUMN_NAME_STORY_ID = "story_id";
+        public static final String COLUMN_NAME_ID = "id";
     }
 }

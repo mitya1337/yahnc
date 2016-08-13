@@ -42,7 +42,7 @@ public class CommentsRepository {
 
     public List<Comment> readAllComments(Integer storyId) {
         db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.query(FeedComment.COMMENTS_TABLE_NAME, null, SELECTION, new String[]{Integer.toString(storyId)}, null, null, FeedComment.COLUMN_NAME_STORY_ID + " ASC");
+        Cursor cursor = db.query(FeedComment.COMMENTS_TABLE_NAME, null, SELECTION, new String[]{Integer.toString(storyId)}, null, null, FeedComment.COLUMN_NAME_ID + " DESC");
         List<Comment> comments = new ArrayList<>();
         if (cursor.moveToFirst()) {
             do {
@@ -53,7 +53,6 @@ public class CommentsRepository {
                 comments.add(comment);
             } while (cursor.moveToNext());
         }
-
         cursor.close();
         db.close();
         return comments;
