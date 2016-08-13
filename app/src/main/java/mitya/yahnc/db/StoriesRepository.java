@@ -35,7 +35,7 @@ public class StoriesRepository {
         values.put(FeedStory.COLUMN_NAME_STORY_BY, story.by);
         values.put(FeedStory.COLUMN_NAME_STORY_TITLE, story.title);
         values.put(FeedStory.COLUMN_NAME_STORY_URL, story.url);
-        values.put(FeedStory.COLUMN_NAME_STORY_DESCENDANTS, story.descendants);
+        values.put(FeedStory.COLUMN_NAME_STORY_DESCENDANTS, story.descendantsCount);
         values.put(FeedStory.COLUMN_NAME_STORY_SCORE, story.score);
         values.put(FeedStory.COLUMN_NAME_STORY_TIME, Long.toString(story.time));
         values.put(FeedStory.COLUMN_NAME_STORY_KIDS, Arrays.toString(story.kids));
