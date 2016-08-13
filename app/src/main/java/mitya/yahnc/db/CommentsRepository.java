@@ -18,15 +18,14 @@ import mitya.yahnc.utils.FormatUtils;
 public class CommentsRepository {
     private static final String SELECTION = "story_id = ?";
 
-    private SQLiteDatabase db;
-    private DbHelper dbHelper;
+    private final DbHelper dbHelper;
 
     public CommentsRepository(DbHelper dbHelper) {
         this.dbHelper = dbHelper;
     }
 
     public void createComment(Comment comment, Integer storyId) {
-        db = dbHelper.getWritableDatabase();
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(FeedComment.COLUMN_NAME_COMMENT_ID, comment.id);
         values.put(FeedComment.COLUMN_NAME_COMMENT_BY, comment.by);
@@ -41,7 +40,7 @@ public class CommentsRepository {
     }
 
     public List<Comment> readAllComments(Integer storyId) {
-        db = dbHelper.getReadableDatabase();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = db.query(FeedComment.COMMENTS_TABLE_NAME, null, SELECTION, new String[]{Integer.toString(storyId)}, null, null, FeedComment.COLUMN_NAME_ID + " DESC");
         List<Comment> comments = new ArrayList<>();
         if (cursor.moveToFirst()) {
