@@ -118,6 +118,22 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    public void actionRefresh() {
+        swipeRefreshLayout.setRefreshing(true);
+        adapter.clearData();
+        endlessRecyclerOnScrollListener.setCurrentPage(1);
+        endlessRecyclerOnScrollListener.setLoading(false);
+        addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
+    }
+
+    public void actionShowSavedStories() {
+        adapter.clearData();
+        DbHelper dbHelper = new DbHelper(this);
+        StoriesRepository storiesRepository = new StoriesRepository(dbHelper);
+        adapter.addStories(storiesRepository.readAllStories());
+        endlessRecyclerOnScrollListener.setLoading(true);
+    }
+
     private void getNewStories() {
         newStories = StoryIdsService.getInstance().getService().getItems("newstories").
                 flatMap(stories -> Observable.from(stories).subscribeOn(Schedulers.io()));
@@ -134,18 +150,10 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                swipeRefreshLayout.setRefreshing(true);
-                adapter.clearData();
-                endlessRecyclerOnScrollListener.setCurrentPage(1);
-                endlessRecyclerOnScrollListener.setLoading(false);
-                addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
+                actionRefresh();
                 return true;
             case R.id.action_show_saved_stories:
-                adapter.clearData();
-                DbHelper dbHelper = new DbHelper(this);
-                StoriesRepository storiesRepository = new StoriesRepository(dbHelper);
-                adapter.addStories(storiesRepository.readAllStories());
-                endlessRecyclerOnScrollListener.setLoading(true);
+                actionShowSavedStories();
                 return true;
             case R.id.action_clear_saved_stories:
                 // TODO : clear story list
