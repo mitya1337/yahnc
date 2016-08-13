@@ -162,8 +162,7 @@ public class StoryActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.story_toolbar, menu);
+        getMenuInflater().inflate(R.menu.story_toolbar, menu);
         return true;
     }
 
