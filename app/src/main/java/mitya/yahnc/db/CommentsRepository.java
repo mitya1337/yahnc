@@ -11,6 +11,7 @@ import java.util.List;
 import mitya.yahnc.domain.Comment;
 import mitya.yahnc.db.DbHelper.FeedComment;
 import mitya.yahnc.utils.FormatUtils;
+import rx.Observable;
 
 /**
  * Created by Mitya on 31.07.2016.
@@ -39,7 +40,11 @@ public class CommentsRepository {
         db.close();
     }
 
-    public List<Comment> readAllComments(Integer storyId) {
+    public Observable<Comment> getAllComments(Integer storyId) {
+        return Observable.from(readAllComments(storyId));
+    }
+
+    private List<Comment> readAllComments(Integer storyId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = db.query(FeedComment.COMMENTS_TABLE_NAME, null, SELECTION, new String[]{Integer.toString(storyId)}, null, null, FeedComment.COLUMN_NAME_ID + " DESC");
         List<Comment> comments = new ArrayList<>();

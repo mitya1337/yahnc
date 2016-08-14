@@ -74,7 +74,7 @@ public class StoryActivity extends AppCompatActivity {
             setupSwipeRefreshLayout();
             setupCommentList();
             if (storiesRepository.readStory(currentStory.id) != null) {
-                Observable.from(commentsRepository.readAllComments(currentStory.id))
+                commentsRepository.getAllComments(currentStory.id)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(adapter::addComment, Throwable::printStackTrace);
@@ -163,6 +163,19 @@ public class StoryActivity extends AppCompatActivity {
         commentsRepository = new CommentsRepository(dbHelper);
     }
 
+    private void actionSaveStory() {
+        storiesRepository.createStory(currentStory);
+        for (Comment comment : adapter.getCommentList()) {
+            commentsRepository.createComment(comment, currentStory.id);
+        }
+        Observable.from(adapter.getCommentList())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(comment -> commentsRepository.createComment(comment, currentStory.id)
+                        , Throwable::printStackTrace
+                        , () -> Toast.makeText(this, "Story saved", Toast.LENGTH_SHORT).show());
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.story_toolbar, menu);
@@ -178,16 +191,7 @@ public class StoryActivity extends AppCompatActivity {
                 getCommentList(currentStory.kids);
                 return true;
             case R.id.action_save_story:
-                storiesRepository.createStory(currentStory);
-                for (Comment comment : adapter.getCommentList()) {
-                    commentsRepository.createComment(comment, currentStory.id);
-                }
-                Observable.from(adapter.getCommentList())
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(comment -> commentsRepository.createComment(comment, currentStory.id)
-                                , Throwable::printStackTrace
-                                , () -> Toast.makeText(this, "Story saved", Toast.LENGTH_SHORT).show());
+                actionSaveStory();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

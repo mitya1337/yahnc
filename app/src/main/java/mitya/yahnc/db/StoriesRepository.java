@@ -11,6 +11,7 @@ import java.util.List;
 
 import mitya.yahnc.domain.Story;
 import mitya.yahnc.utils.FormatUtils;
+import rx.Observable;
 
 import static mitya.yahnc.db.DbHelper.FeedStory;
 
@@ -61,7 +62,11 @@ public class StoriesRepository {
         }
     }
 
-    public List<Story> readAllStories() {
+    public Observable<Story> getAllStories() {
+        return Observable.from(readAllStories());
+    }
+
+    private List<Story> readAllStories() {
         db = dbHelper.getReadableDatabase();
         Cursor cursor = db.query(FeedStory.STORY_TABLE_NAME, null, null, null, null, null, FeedStory.COLUMN_NAME_ID + " DESC");
         List<Story> stories = new ArrayList<>();

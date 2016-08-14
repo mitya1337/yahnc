@@ -11,7 +11,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.Adapter;
 import android.widget.Toast;
 
 import butterknife.BindView;
@@ -119,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    public void actionRefresh() {
+    private void actionRefresh() {
         swipeRefreshLayout.setRefreshing(true);
         adapter.clearData();
         endlessRecyclerOnScrollListener.setCurrentPage(1);
@@ -127,15 +126,14 @@ public class MainActivity extends AppCompatActivity {
         addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
     }
 
-    public void actionShowSavedStories() {
+    private void actionShowSavedStories() {
         adapter.clearData();
         DbHelper dbHelper = new DbHelper(this);
         StoriesRepository storiesRepository = new StoriesRepository(dbHelper);
-        Observable.from(storiesRepository.readAllStories())
+        storiesRepository.getAllStories()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(adapter::addStory, Throwable::printStackTrace);
-        adapter.addStories(storiesRepository.readAllStories());
+                .subscribe(story -> adapter.addStory(story), Throwable::printStackTrace);
         endlessRecyclerOnScrollListener.setLoading(true);
     }
 
