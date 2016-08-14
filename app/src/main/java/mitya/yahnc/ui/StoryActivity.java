@@ -74,7 +74,10 @@ public class StoryActivity extends AppCompatActivity {
             setupSwipeRefreshLayout();
             setupCommentList();
             if (storiesRepository.readStory(currentStory.id) != null) {
-                adapter.addComments(commentsRepository.readAllComments(currentStory.id));
+                Observable.from(commentsRepository.readAllComments(currentStory.id))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(adapter::addComment, Throwable::printStackTrace);
             } else {
                 getCommentList(currentStory.kids);
             }
@@ -179,7 +182,12 @@ public class StoryActivity extends AppCompatActivity {
                 for (Comment comment : adapter.getCommentList()) {
                     commentsRepository.createComment(comment, currentStory.id);
                 }
-                Toast.makeText(this, "Story saved", Toast.LENGTH_SHORT).show();
+                Observable.from(adapter.getCommentList())
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(comment -> commentsRepository.createComment(comment, currentStory.id)
+                                , Throwable::printStackTrace
+                                , () -> Toast.makeText(this, "Story saved", Toast.LENGTH_SHORT).show());
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

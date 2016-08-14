@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Adapter;
 import android.widget.Toast;
 
 import butterknife.BindView;
@@ -130,6 +131,10 @@ public class MainActivity extends AppCompatActivity {
         adapter.clearData();
         DbHelper dbHelper = new DbHelper(this);
         StoriesRepository storiesRepository = new StoriesRepository(dbHelper);
+        Observable.from(storiesRepository.readAllStories())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(adapter::addStory, Throwable::printStackTrace);
         adapter.addStories(storiesRepository.readAllStories());
         endlessRecyclerOnScrollListener.setLoading(true);
     }
