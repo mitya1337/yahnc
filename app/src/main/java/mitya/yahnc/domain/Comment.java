@@ -12,6 +12,7 @@ public class Comment {
     public final long time;
     public final String type;
     public int nestingLevel;
+    public int storyId;
 
     public Comment(int id,String by,  Integer[] kids, int parent, String text, long time, String type) {
         this.by = by;

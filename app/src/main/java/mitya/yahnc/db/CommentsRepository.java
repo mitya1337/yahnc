@@ -16,16 +16,15 @@ import rx.Observable;
 /**
  * Created by Mitya on 31.07.2016.
  */
-public class CommentsRepository {
+public class CommentsRepository extends Repository<Comment> {
     private static final String SELECTION = "story_id = ?";
 
-    private final DbHelper dbHelper;
-
     public CommentsRepository(DbHelper dbHelper) {
-        this.dbHelper = dbHelper;
+        super(dbHelper);
     }
 
-    public void createComment(Comment comment, Integer storyId) {
+    @Override
+    public void saveItem(Comment comment) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(FeedComment.COLUMN_NAME_COMMENT_ID, comment.id);
@@ -35,18 +34,15 @@ public class CommentsRepository {
         values.put(FeedComment.COLUMN_NAME_COMMENT_TEXT, comment.text);
         values.put(FeedComment.COLUMN_NAME_COMMENT_TIME, Long.toString(comment.time));
         values.put(FeedComment.COLUMN_NAME_COMMENT_NESTINGLEVEL, comment.nestingLevel);
-        values.put(FeedComment.COLUMN_NAME_STORY_ID, storyId);
+        values.put(FeedComment.COLUMN_NAME_STORY_ID, comment.storyId);
         db.insert(FeedComment.COMMENTS_TABLE_NAME, null, values);
         db.close();
     }
 
-    public Observable<Comment> getAllComments(Integer storyId) {
-        return Observable.from(readAllComments(storyId));
-    }
-
-    private List<Comment> readAllComments(Integer storyId) {
+    @Override
+    public Observable<Comment> find(String selection, String[] selectionArgs) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.query(FeedComment.COMMENTS_TABLE_NAME, null, SELECTION, new String[]{Integer.toString(storyId)}, null, null, FeedComment.COLUMN_NAME_ID + " DESC");
+        Cursor cursor = db.query(FeedComment.COMMENTS_TABLE_NAME, null, selection, selectionArgs, null, null, FeedComment.COLUMN_NAME_ID + " DESC");
         List<Comment> comments = new ArrayList<>();
         if (cursor.moveToFirst()) {
             do {
@@ -59,6 +55,6 @@ public class CommentsRepository {
         }
         cursor.close();
         db.close();
-        return comments;
+        return Observable.from(comments);
     }
 }

@@ -74,7 +74,7 @@ public class StoryActivity extends AppCompatActivity {
             setupSwipeRefreshLayout();
             setupCommentList();
             if (storiesRepository.readStory(currentStory.id) != null) {
-                commentsRepository.getAllComments(currentStory.id)
+                commentsRepository.find("id = ?", new String[]{Integer.toString(currentStory.id)})
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(adapter::addComment, Throwable::printStackTrace);
@@ -126,6 +126,7 @@ public class StoryActivity extends AppCompatActivity {
                     .flatMap(commentService::getComment)
                     .flatMap(childComment -> {
                         childComment.nestingLevel = nestingLevel;
+                        childComment.storyId = currentStory.id;
                         return getNestedComments(childComment, nestingLevel + 1);
                     }));
         } else {
@@ -138,7 +139,10 @@ public class StoryActivity extends AppCompatActivity {
             commentQuerySubscription = Observable.from(commentIds)
                     .flatMap(commentService::getComment)
                     .subscribeOn(Schedulers.io())
-                    .flatMap(comment -> getNestedComments(comment, 1))
+                    .flatMap(comment -> {
+                        comment.storyId = currentStory.id;
+                        return getNestedComments(comment, 1);
+                    })
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(adapter::addComment, error -> {
                         error.printStackTrace();
@@ -164,14 +168,14 @@ public class StoryActivity extends AppCompatActivity {
     }
 
     private void actionSaveStory() {
-        storiesRepository.createStory(currentStory);
+        storiesRepository.saveItem(currentStory);
         for (Comment comment : adapter.getCommentList()) {
-            commentsRepository.createComment(comment, currentStory.id);
+            commentsRepository.saveItem(comment);
         }
         Observable.from(adapter.getCommentList())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(comment -> commentsRepository.createComment(comment, currentStory.id)
+                .subscribe(comment -> commentsRepository.saveItem(comment)
                         , Throwable::printStackTrace
                         , () -> Toast.makeText(this, "Story saved", Toast.LENGTH_SHORT).show());
     }

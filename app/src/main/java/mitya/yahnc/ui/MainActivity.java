@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
         adapter.clearData();
         DbHelper dbHelper = new DbHelper(this);
         StoriesRepository storiesRepository = new StoriesRepository(dbHelper);
-        storiesRepository.getAllStories()
+        storiesRepository.find(null, null)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(story -> adapter.addStory(story), Throwable::printStackTrace);

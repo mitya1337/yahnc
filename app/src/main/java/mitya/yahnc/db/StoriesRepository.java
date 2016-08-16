@@ -18,18 +18,18 @@ import static mitya.yahnc.db.DbHelper.FeedStory;
 /**
  * Created by Mitya on 31.07.2016.
  */
-public class StoriesRepository {
+public class StoriesRepository extends Repository<Story> {
 
     private static final String SELECTION = "id = ?";
 
     private SQLiteDatabase db;
-    private DbHelper dbHelper;
 
     public StoriesRepository(DbHelper dbHelper) {
-        this.dbHelper = dbHelper;
+        super(dbHelper);
     }
 
-    public void createStory(Story story) {
+    @Override
+    public void saveItem(Story story) {
         db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(FeedStory.COLUMN_NAME_STORY_ID, story.id);
@@ -42,6 +42,24 @@ public class StoriesRepository {
         values.put(FeedStory.COLUMN_NAME_STORY_KIDS, Arrays.toString(story.kids));
         db.insert(FeedStory.STORY_TABLE_NAME, null, values);
         db.close();
+    }
+
+    @Override
+    public Observable<Story> find(String selection, String[] selectionArgs) {
+        db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.query(FeedStory.STORY_TABLE_NAME, null, selection, selectionArgs, null, null, FeedStory.COLUMN_NAME_ID + " DESC");
+        List<Story> stories = new ArrayList<>();
+        if (cursor.moveToFirst()) {
+            do {
+                Story story = new Story(cursor.getInt(0), cursor.getString(1), cursor.getString(2)
+                        , cursor.getString(3), cursor.getInt(4), cursor.getInt(5), Long.parseLong(cursor.getString(6))
+                        , FormatUtils.stringToArray(cursor.getString(7)), "story");
+                stories.add(story);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return Observable.from(stories);
     }
 
     @Nullable
@@ -60,26 +78,5 @@ public class StoriesRepository {
             db.close();
             return null;
         }
-    }
-
-    public Observable<Story> getAllStories() {
-        return Observable.from(readAllStories());
-    }
-
-    private List<Story> readAllStories() {
-        db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.query(FeedStory.STORY_TABLE_NAME, null, null, null, null, null, FeedStory.COLUMN_NAME_ID + " DESC");
-        List<Story> stories = new ArrayList<>();
-        if (cursor.moveToFirst()) {
-            do {
-                Story story = new Story(cursor.getInt(0), cursor.getString(1), cursor.getString(2)
-                        , cursor.getString(3), cursor.getInt(4), cursor.getInt(5), Long.parseLong(cursor.getString(6))
-                        , FormatUtils.stringToArray(cursor.getString(7)), "story");
-                stories.add(story);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        db.close();
-        return stories;
     }
 }
