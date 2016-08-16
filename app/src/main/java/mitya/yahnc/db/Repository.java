@@ -13,7 +13,7 @@ public abstract class Repository<T> {
         this.dbHelper = dbHelper;
     }
 
-    public abstract void saveItem(T item);
+    public abstract Observable<Long> saveItem(T item);
 
     public abstract Observable<T> find(String selection, String[] selectionArgs);
 

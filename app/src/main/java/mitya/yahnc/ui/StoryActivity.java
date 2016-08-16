@@ -10,7 +10,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -73,14 +72,14 @@ public class StoryActivity extends AppCompatActivity {
             setupToolbar();
             setupSwipeRefreshLayout();
             setupCommentList();
-            if (storiesRepository.readStory(currentStory.id) != null) {
-                commentsRepository.find("id = ?", new String[]{Integer.toString(currentStory.id)})
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(adapter::addComment, Throwable::printStackTrace);
-            } else {
-                getCommentList(currentStory.kids);
-            }
+            storiesRepository.findStory("story_id=?", new String[]{Integer.toString(currentStory.id)})
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .flatMap(story -> commentsRepository.find("story_id=?", new String[]{Integer.toString(story.id)}))
+                    .subscribe(adapter::addComment, error -> {
+                        Toast.makeText(this, "Story not found", Toast.LENGTH_SHORT).show();
+                        getCommentList(currentStory.kids);
+                    });
         } else {
             Toast.makeText(this, "Story is null", Toast.LENGTH_SHORT).show();
         }
@@ -168,16 +167,18 @@ public class StoryActivity extends AppCompatActivity {
     }
 
     private void actionSaveStory() {
-        storiesRepository.saveItem(currentStory);
-        for (Comment comment : adapter.getCommentList()) {
-            commentsRepository.saveItem(comment);
-        }
+        storiesRepository.saveItem(currentStory)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(aLong -> {
+                }, Throwable::printStackTrace);
         Observable.from(adapter.getCommentList())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(comment -> commentsRepository.saveItem(comment)
-                        , Throwable::printStackTrace
-                        , () -> Toast.makeText(this, "Story saved", Toast.LENGTH_SHORT).show());
+                .flatMap(comment -> commentsRepository.saveItem(comment))
+                .subscribe(aLong -> {
+                    Toast.makeText(this, "Story saved", Toast.LENGTH_SHORT).show();
+                }, Throwable::printStackTrace);
     }
 
     @Override
