@@ -2,7 +2,6 @@ package mitya.yahnc.ui;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -25,9 +24,9 @@ import mitya.yahnc.R;
 import mitya.yahnc.domain.Comment;
 import mitya.yahnc.domain.Story;
 import rx.Observable;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class StoryActivity extends AppCompatActivity {
     public static final String EXTRA_STORY = "Story";
@@ -57,14 +56,14 @@ public class StoryActivity extends AppCompatActivity {
     private StoriesRepository storiesRepository;
     private CommentsRepository commentsRepository;
 
-    @Nullable
-    private Subscription commentQuerySubscription;
+    private CompositeSubscription compositeSubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story);
         ButterKnife.bind(this);
+        compositeSubscription = new CompositeSubscription();
         setupDatabase();
         currentStory = getIntent().getParcelableExtra(EXTRA_STORY);
         if (currentStory != null) {
@@ -72,14 +71,13 @@ public class StoryActivity extends AppCompatActivity {
             setupToolbar();
             setupSwipeRefreshLayout();
             setupCommentList();
-            storiesRepository.findStory("story_id=?", new String[]{Integer.toString(currentStory.id)})
+            compositeSubscription.add(storiesRepository.findStory("story_id=?", new String[]{Integer.toString(currentStory.id)})
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .flatMap(story -> commentsRepository.find("story_id=?", new String[]{Integer.toString(story.id)}))
                     .subscribe(adapter::addComment, error -> {
-                        Toast.makeText(this, "Story not found", Toast.LENGTH_SHORT).show();
                         getCommentList(currentStory.kids);
-                    });
+                    }));
         } else {
             Toast.makeText(this, "Story is null", Toast.LENGTH_SHORT).show();
         }
@@ -135,7 +133,7 @@ public class StoryActivity extends AppCompatActivity {
 
     private void getCommentList(Integer[] commentIds) {
         if (commentIds != null) {
-            commentQuerySubscription = Observable.from(commentIds)
+            compositeSubscription.add(Observable.from(commentIds)
                     .flatMap(commentService::getComment)
                     .subscribeOn(Schedulers.io())
                     .flatMap(comment -> {
@@ -146,7 +144,7 @@ public class StoryActivity extends AppCompatActivity {
                     .subscribe(adapter::addComment, error -> {
                         error.printStackTrace();
                         swipeRefreshLayout.setRefreshing(false);
-                    }, () -> swipeRefreshLayout.setRefreshing(false));
+                    }, () -> swipeRefreshLayout.setRefreshing(false)));
         } else {
             swipeRefreshLayout.setRefreshing(false);
             Toast.makeText(this, "No comments", Toast.LENGTH_SHORT).show();
@@ -167,18 +165,17 @@ public class StoryActivity extends AppCompatActivity {
     }
 
     private void actionSaveStory() {
-        storiesRepository.saveItem(currentStory)
+        compositeSubscription.add(storiesRepository.saveItem(currentStory)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(aLong -> {
-                }, Throwable::printStackTrace);
-        Observable.from(adapter.getCommentList())
+                }, Throwable::printStackTrace));
+        compositeSubscription.add(Observable.from(adapter.getCommentList())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .flatMap(comment -> commentsRepository.saveItem(comment))
                 .subscribe(aLong -> {
-                    Toast.makeText(this, "Story saved", Toast.LENGTH_SHORT).show();
-                }, Throwable::printStackTrace);
+                }, Throwable::printStackTrace, () -> Toast.makeText(this, "Story saved", Toast.LENGTH_SHORT).show()));
     }
 
     @Override
@@ -206,10 +203,14 @@ public class StoryActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if (commentQuerySubscription != null) {
-            if (!commentQuerySubscription.isUnsubscribed()) {
-                commentQuerySubscription.unsubscribe();
-            }
+        if (!compositeSubscription.isUnsubscribed()) {
+            compositeSubscription.unsubscribe();
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        compositeSubscription = new CompositeSubscription();
     }
 }

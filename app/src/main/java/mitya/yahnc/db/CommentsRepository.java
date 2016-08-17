@@ -53,7 +53,7 @@ public class CommentsRepository extends Repository<Comment> {
     public Observable<Comment> find(String selection, String[] selectionArgs) {
         return Observable.create(subscriber -> {
             SQLiteDatabase db = dbHelper.getReadableDatabase();
-            Cursor cursor = db.query(FeedComment.COMMENTS_TABLE_NAME, null, selection, selectionArgs, null, null, FeedComment.COLUMN_NAME_ID + " DESC");
+            Cursor cursor = db.query(FeedComment.COMMENTS_TABLE_NAME, null, selection, selectionArgs, null, null, FeedComment.COLUMN_NAME_ID + " ASC");
             if (cursor.moveToFirst()) {
                 do {
                     Comment comment = new Comment(cursor.getInt(0), cursor.getString(2)

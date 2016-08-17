@@ -2,7 +2,6 @@ package mitya.yahnc.ui;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -22,9 +21,9 @@ import mitya.yahnc.network.StoryIdsService;
 import mitya.yahnc.network.StoryService;
 import mitya.yahnc.domain.Story;
 import rx.Observable;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class MainActivity extends AppCompatActivity {
     private static final int STORIES_PER_PAGE = 20;
@@ -41,20 +40,21 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayoutManager layoutManager;
     private Observable<Integer> newStories;
     private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
-    @Nullable
-    private Subscription newPageQuerySubscription;
+
+    private CompositeSubscription compositeSubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        compositeSubscription = new CompositeSubscription();
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         Uri data = getIntent().getData();
         if (data != null && data.getQueryParameter("id") != null) {
             Integer id = Integer.parseInt(data.getQueryParameter("id"));
-            storyService.getStory(id).subscribeOn(Schedulers.io())
+            compositeSubscription.add(storyService.getStory(id).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(story -> StoryActivity.startWith(this, story), Throwable::printStackTrace);
+                    .subscribe(story -> StoryActivity.startWith(this, story), Throwable::printStackTrace));
         } else {
             setupToolbar();
             setupSwipeRefreshLayout();
@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addNewPage(int currentPage) {
-        newPageQuerySubscription = newStories.
+        compositeSubscription.add(newStories.
                 skip(STORIES_PER_PAGE * (currentPage - 1)).
                 take(STORIES_PER_PAGE).
                 flatMap(id -> storyService.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
                 }, () -> {
                     swipeRefreshLayout.setRefreshing(false);
                     endlessRecyclerOnScrollListener.setLoading(false);
-                });
+                }));
     }
 
     private void actionRefresh() {
@@ -130,10 +130,10 @@ public class MainActivity extends AppCompatActivity {
         adapter.clearData();
         DbHelper dbHelper = new DbHelper(this);
         StoriesRepository storiesRepository = new StoriesRepository(dbHelper);
-        storiesRepository.find(null, null)
+        compositeSubscription.add(storiesRepository.find(null, null)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(story -> adapter.addStory(story), Throwable::printStackTrace);
+                .subscribe(story -> adapter.addStory(story), Throwable::printStackTrace));
         endlessRecyclerOnScrollListener.setLoading(true);
     }
 
@@ -170,11 +170,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         endlessRecyclerOnScrollListener.setLoading(false);
-        if (newPageQuerySubscription != null) {
-            if (!newPageQuerySubscription.isUnsubscribed()) {
-                newPageQuerySubscription.unsubscribe();
-            }
+        if (!compositeSubscription.isUnsubscribed()) {
+            compositeSubscription.unsubscribe();
         }
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        compositeSubscription = new CompositeSubscription();
+    }
 }
