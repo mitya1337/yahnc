@@ -2,6 +2,7 @@ package mitya.yahnc.ui;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -28,6 +29,8 @@ import rx.subscriptions.CompositeSubscription;
 public class MainActivity extends AppCompatActivity {
     private static final int STORIES_PER_PAGE = 20;
     private final StoryService.Api storyService = StoryService.getInstance().getService();
+    @NonNull
+    private final CompositeSubscription compositeSubscription = new CompositeSubscription();
 
     @BindView(R.id.mainRecyclerView)
     RecyclerView recyclerView;
@@ -41,12 +44,10 @@ public class MainActivity extends AppCompatActivity {
     private Observable<Integer> newStories;
     private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
 
-    private CompositeSubscription compositeSubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        compositeSubscription = new CompositeSubscription();
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         Uri data = getIntent().getData();
@@ -170,14 +171,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         endlessRecyclerOnScrollListener.setLoading(false);
-        if (!compositeSubscription.isUnsubscribed()) {
-            compositeSubscription.unsubscribe();
-        }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        compositeSubscription = new CompositeSubscription();
+        compositeSubscription.clear();
     }
 }

@@ -2,6 +2,7 @@ package mitya.yahnc.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -33,6 +34,8 @@ public class StoryActivity extends AppCompatActivity {
 
     private Story currentStory;
     private final CommentService.Api commentService = CommentService.getInstance().getService();
+    @NonNull
+    private final CompositeSubscription compositeSubscription = new CompositeSubscription();
 
     @BindView(R.id.storyToolbar)
     Toolbar storyToolbar;
@@ -56,14 +59,12 @@ public class StoryActivity extends AppCompatActivity {
     private StoriesRepository storiesRepository;
     private CommentsRepository commentsRepository;
 
-    private CompositeSubscription compositeSubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story);
         ButterKnife.bind(this);
-        compositeSubscription = new CompositeSubscription();
         setupDatabase();
         currentStory = getIntent().getParcelableExtra(EXTRA_STORY);
         if (currentStory != null) {
@@ -203,14 +204,6 @@ public class StoryActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if (!compositeSubscription.isUnsubscribed()) {
-            compositeSubscription.unsubscribe();
-        }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        compositeSubscription = new CompositeSubscription();
+        compositeSubscription.clear();
     }
 }
