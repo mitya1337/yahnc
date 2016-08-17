@@ -2,7 +2,7 @@ package mitya.yahnc.ui;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,21 +11,26 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import mitya.yahnc.R;
+import mitya.yahnc.db.DbHelper;
+import mitya.yahnc.db.StoriesRepository;
 import mitya.yahnc.network.StoryIdsService;
 import mitya.yahnc.network.StoryService;
 import mitya.yahnc.domain.Story;
 import rx.Observable;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class MainActivity extends AppCompatActivity {
     private static final int STORIES_PER_PAGE = 20;
     private final StoryService.Api storyService = StoryService.getInstance().getService();
+    @NonNull
+    private final CompositeSubscription compositeSubscription = new CompositeSubscription();
 
     @BindView(R.id.mainRecyclerView)
     RecyclerView recyclerView;
@@ -38,8 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayoutManager layoutManager;
     private Observable<Integer> newStories;
     private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
-    @Nullable
-    private Subscription newPageQuerySubscription;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,9 +53,9 @@ public class MainActivity extends AppCompatActivity {
         Uri data = getIntent().getData();
         if (data != null && data.getQueryParameter("id") != null) {
             Integer id = Integer.parseInt(data.getQueryParameter("id"));
-            storyService.getStory(id).subscribeOn(Schedulers.io())
+            compositeSubscription.add(storyService.getStory(id).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(story -> StoryActivity.startWith(this, story), Throwable::printStackTrace);
+                    .subscribe(story -> StoryActivity.startWith(this, story), Throwable::printStackTrace));
         } else {
             setupToolbar();
             setupSwipeRefreshLayout();
@@ -99,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addNewPage(int currentPage) {
-        newPageQuerySubscription = newStories.
+        compositeSubscription.add(newStories.
                 skip(STORIES_PER_PAGE * (currentPage - 1)).
                 take(STORIES_PER_PAGE).
                 flatMap(id -> storyService.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
@@ -112,7 +116,26 @@ public class MainActivity extends AppCompatActivity {
                 }, () -> {
                     swipeRefreshLayout.setRefreshing(false);
                     endlessRecyclerOnScrollListener.setLoading(false);
-                });
+                }));
+    }
+
+    private void actionRefresh() {
+        swipeRefreshLayout.setRefreshing(true);
+        adapter.clearData();
+        endlessRecyclerOnScrollListener.setCurrentPage(1);
+        endlessRecyclerOnScrollListener.setLoading(false);
+        addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
+    }
+
+    private void actionShowSavedStories() {
+        adapter.clearData();
+        DbHelper dbHelper = new DbHelper(this);
+        StoriesRepository storiesRepository = new StoriesRepository(dbHelper);
+        compositeSubscription.add(storiesRepository.find(null, null)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(story -> adapter.addStory(story), Throwable::printStackTrace));
+        endlessRecyclerOnScrollListener.setLoading(true);
     }
 
     private void getNewStories() {
@@ -131,11 +154,14 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                swipeRefreshLayout.setRefreshing(true);
-                adapter.clearData();
-                endlessRecyclerOnScrollListener.setCurrentPage(1);
-                addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
+                actionRefresh();
                 return true;
+            case R.id.action_show_saved_stories:
+                actionShowSavedStories();
+                return true;
+            case R.id.action_clear_saved_stories:
+                // TODO : clear story list
+                Toast.makeText(this, "Database cleared", Toast.LENGTH_SHORT).show();
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -145,11 +171,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         endlessRecyclerOnScrollListener.setLoading(false);
-        if (newPageQuerySubscription != null) {
-            if (!newPageQuerySubscription.isUnsubscribed()) {
-                newPageQuerySubscription.unsubscribe();
-            }
-        }
+        compositeSubscription.clear();
     }
-
 }

@@ -2,7 +2,7 @@ package mitya.yahnc.ui;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.Nullable;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,28 +10,32 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import mitya.yahnc.db.CommentsRepository;
+import mitya.yahnc.db.DbHelper;
+import mitya.yahnc.db.StoriesRepository;
 import mitya.yahnc.network.CommentService;
 import mitya.yahnc.utils.FormatUtils;
 import mitya.yahnc.R;
 import mitya.yahnc.domain.Comment;
 import mitya.yahnc.domain.Story;
 import rx.Observable;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class StoryActivity extends AppCompatActivity {
     public static final String EXTRA_STORY = "Story";
 
     private Story currentStory;
     private final CommentService.Api commentService = CommentService.getInstance().getService();
+    @NonNull
+    private final CompositeSubscription compositeSubscription = new CompositeSubscription();
 
     @BindView(R.id.storyToolbar)
     Toolbar storyToolbar;
@@ -52,22 +56,29 @@ public class StoryActivity extends AppCompatActivity {
 
     private LinearLayoutManager layoutManager;
     private final CommentsAdapter adapter = new CommentsAdapter();
+    private StoriesRepository storiesRepository;
+    private CommentsRepository commentsRepository;
 
-    @Nullable
-    private Subscription commentQuerySubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story);
         ButterKnife.bind(this);
+        setupDatabase();
         currentStory = getIntent().getParcelableExtra(EXTRA_STORY);
         if (currentStory != null) {
             setupStoryInfo();
             setupToolbar();
             setupSwipeRefreshLayout();
             setupCommentList();
-            getCommentList(currentStory.kids);
+            compositeSubscription.add(storiesRepository.findStory("story_id=?", new String[]{Integer.toString(currentStory.id)})
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .flatMap(story -> commentsRepository.find("story_id=?", new String[]{Integer.toString(story.id)}))
+                    .subscribe(adapter::addComment, error -> {
+                        getCommentList(currentStory.kids);
+                    }));
         } else {
             Toast.makeText(this, "Story is null", Toast.LENGTH_SHORT).show();
         }
@@ -113,6 +124,7 @@ public class StoryActivity extends AppCompatActivity {
                     .flatMap(commentService::getComment)
                     .flatMap(childComment -> {
                         childComment.nestingLevel = nestingLevel;
+                        childComment.storyId = currentStory.id;
                         return getNestedComments(childComment, nestingLevel + 1);
                     }));
         } else {
@@ -122,15 +134,18 @@ public class StoryActivity extends AppCompatActivity {
 
     private void getCommentList(Integer[] commentIds) {
         if (commentIds != null) {
-            commentQuerySubscription = Observable.from(commentIds)
+            compositeSubscription.add(Observable.from(commentIds)
                     .flatMap(commentService::getComment)
                     .subscribeOn(Schedulers.io())
-                    .flatMap(comment -> getNestedComments(comment, 1))
+                    .flatMap(comment -> {
+                        comment.storyId = currentStory.id;
+                        return getNestedComments(comment, 1);
+                    })
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(comment -> adapter.addComment(comment), error -> {
+                    .subscribe(adapter::addComment, error -> {
                         error.printStackTrace();
                         swipeRefreshLayout.setRefreshing(false);
-                    }, () -> swipeRefreshLayout.setRefreshing(false));
+                    }, () -> swipeRefreshLayout.setRefreshing(false)));
         } else {
             swipeRefreshLayout.setRefreshing(false);
             Toast.makeText(this, "No comments", Toast.LENGTH_SHORT).show();
@@ -144,10 +159,29 @@ public class StoryActivity extends AppCompatActivity {
         });
     }
 
+    private void setupDatabase() {
+        DbHelper dbHelper = new DbHelper(this);
+        storiesRepository = new StoriesRepository(dbHelper);
+        commentsRepository = new CommentsRepository(dbHelper);
+    }
+
+    private void actionSaveStory() {
+        compositeSubscription.add(storiesRepository.saveItem(currentStory)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(aLong -> {
+                }, Throwable::printStackTrace));
+        compositeSubscription.add(Observable.from(adapter.getCommentList())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .flatMap(comment -> commentsRepository.saveItem(comment))
+                .subscribe(aLong -> {
+                }, Throwable::printStackTrace, () -> Toast.makeText(this, "Story saved", Toast.LENGTH_SHORT).show()));
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.toolbar, menu);
+        getMenuInflater().inflate(R.menu.story_toolbar, menu);
         return true;
     }
 
@@ -159,6 +193,9 @@ public class StoryActivity extends AppCompatActivity {
                 adapter.clearData();
                 getCommentList(currentStory.kids);
                 return true;
+            case R.id.action_save_story:
+                actionSaveStory();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -167,10 +204,6 @@ public class StoryActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if (commentQuerySubscription != null) {
-            if (!commentQuerySubscription.isUnsubscribed()) {
-                commentQuerySubscription.unsubscribe();
-            }
-        }
+        compositeSubscription.clear();
     }
 }
