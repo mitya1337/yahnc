@@ -5,9 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import mitya.yahnc.domain.Comment;
 import mitya.yahnc.db.DbHelper.FeedComment;
@@ -38,9 +36,13 @@ public class CommentsRepository extends Repository<Comment> {
             values.put(FeedComment.COLUMN_NAME_STORY_ID, comment.storyId);
             long rowId = db.insert(FeedComment.COMMENTS_TABLE_NAME, null, values);
             if (rowId == -1) {
-                subscriber.onError(new SQLiteException("Could not save item"));
+                if (!subscriber.isUnsubscribed()) {
+                    subscriber.onError(new SQLiteException("Could not save item"));
+                }
             } else {
-                subscriber.onNext(rowId);
+                if (!subscriber.isUnsubscribed()) {
+                    subscriber.onNext(rowId);
+                }
                 subscriber.onCompleted();
             }
             db.close();
@@ -58,7 +60,9 @@ public class CommentsRepository extends Repository<Comment> {
                             , FormatUtils.stringToArray(cursor.getString(3)), cursor.getInt(4), cursor.getString(5)
                             , Long.parseLong(cursor.getString(6)), "comment");
                     comment.nestingLevel = cursor.getInt(7);
-                    subscriber.onNext(comment);
+                    if (!subscriber.isUnsubscribed()) {
+                        subscriber.onNext(comment);
+                    }
                 } while (cursor.moveToNext());
             }
             cursor.close();
