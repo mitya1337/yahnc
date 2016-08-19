@@ -16,7 +16,7 @@ import mitya.yahnc.ui.StoryActivity;
  * Created by Mitya on 19.08.2016.
  */
 public class ChromeCustomTab {
-    public static final String EXTRA_STORY = "Story";
+    private static final String EXTRA_STORY = "Story";
 
     public static void openChromeTab(Activity activity, Story story) {
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
