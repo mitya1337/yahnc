@@ -2,13 +2,14 @@ package mitya.yahnc.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -16,14 +17,15 @@ import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import mitya.yahnc.R;
 import mitya.yahnc.db.CommentsRepository;
 import mitya.yahnc.db.DbHelper;
 import mitya.yahnc.db.StoriesRepository;
-import mitya.yahnc.network.CommentService;
-import mitya.yahnc.utils.FormatUtils;
-import mitya.yahnc.R;
 import mitya.yahnc.domain.Comment;
 import mitya.yahnc.domain.Story;
+import mitya.yahnc.network.CommentService;
+import mitya.yahnc.utils.ChromeCustomTab;
+import mitya.yahnc.utils.FormatUtils;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -67,6 +69,7 @@ public class StoryActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         setupDatabase();
         currentStory = getIntent().getParcelableExtra(EXTRA_STORY);
+        Log.d("TEST", "FROM STORYACTIVITY  " + currentStory.url);
         if (currentStory != null) {
             setupStoryInfo();
             setupToolbar();
@@ -195,6 +198,9 @@ public class StoryActivity extends AppCompatActivity {
                 return true;
             case R.id.action_save_story:
                 actionSaveStory();
+                return true;
+            case R.id.action_show_story:
+                ChromeCustomTab.openChromeTab(this, currentStory);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

@@ -4,6 +4,7 @@
     <string name="action_show_saved_stories">Saved stories</string>
     <string name="action_save_story">Save story</string>
     <string name="action_clear_saved_stories">Clear saved stories</string>
+    <string name="action_show_story">Show story</string>
     <string name="toolbar_title">MainActivity</string>
     <string name="today">Today</string>
     <string name="yesterday">Yesterday</string>
