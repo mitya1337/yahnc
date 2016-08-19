@@ -28,7 +28,7 @@ public class ChromeCustomTab {
         intent.putExtra(EXTRA_STORY, story);
         PendingIntent pendingIntent = PendingIntent.getActivity(activity.getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setActionButton(BitmapFactory.decodeResource(activity.getResources(), R.drawable.ic_chat_bubble_outline_black_24dp),
-                "Show comments", pendingIntent);
+                activity.getString(R.string.action_show_comments), pendingIntent);
         builder.build().launchUrl(activity, Uri.parse(story.url));
     }
 }

@@ -9,7 +9,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -69,7 +68,6 @@ public class StoryActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         setupDatabase();
         currentStory = getIntent().getParcelableExtra(EXTRA_STORY);
-        Log.d("TEST", "FROM STORYACTIVITY  " + currentStory.url);
         if (currentStory != null) {
             setupStoryInfo();
             setupToolbar();
