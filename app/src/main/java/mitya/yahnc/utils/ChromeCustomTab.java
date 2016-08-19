@@ -19,16 +19,18 @@ public class ChromeCustomTab {
     private static final String EXTRA_STORY = "Story";
 
     public static void openChromeTab(Activity activity, Story story) {
-        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-        builder.setCloseButtonIcon(BitmapFactory.decodeResource(activity.getResources()
-                , R.drawable.ic_keyboard_backspace_black_24dp));
-        builder.setStartAnimations(activity, R.anim.slide_in_right, R.anim.slide_out_left);
-        builder.setExitAnimations(activity, R.anim.slide_in_left, R.anim.slide_out_right);
         Intent intent = new Intent(activity, StoryActivity.class);
         intent.putExtra(EXTRA_STORY, story);
-        PendingIntent pendingIntent = PendingIntent.getActivity(activity.getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        builder.setActionButton(BitmapFactory.decodeResource(activity.getResources(), R.drawable.ic_chat_bubble_outline_black_24dp),
-                activity.getString(R.string.action_show_comments), pendingIntent);
-        builder.build().launchUrl(activity, Uri.parse(story.url));
+        PendingIntent pendingIntent = PendingIntent.getActivity(activity.getApplicationContext()
+                , 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        CustomTabsIntent customIntent = new CustomTabsIntent.Builder()
+                .setCloseButtonIcon(BitmapFactory.decodeResource(activity.getResources()
+                        , R.drawable.ic_keyboard_backspace_black_24dp))
+                .setStartAnimations(activity, R.anim.slide_in_right, R.anim.slide_out_left)
+                .setExitAnimations(activity, R.anim.slide_in_left, R.anim.slide_out_right)
+                .setActionButton(BitmapFactory.decodeResource(activity.getResources(), R.drawable.ic_chat_bubble_outline_black_24dp),
+                        activity.getString(R.string.action_show_comments), pendingIntent)
+                .build();
+        customIntent.launchUrl(activity, Uri.parse(story.url));
     }
 }
