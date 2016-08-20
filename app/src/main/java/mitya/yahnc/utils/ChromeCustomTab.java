@@ -25,10 +25,10 @@ public class ChromeCustomTab {
                 , 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         CustomTabsIntent customIntent = new CustomTabsIntent.Builder()
                 .setCloseButtonIcon(BitmapFactory.decodeResource(activity.getResources()
-                        , R.drawable.ic_keyboard_backspace_black_24dp))
+                        , R.drawable.ic_back_arrow))
                 .setStartAnimations(activity, R.anim.slide_in_right, R.anim.slide_out_left)
                 .setExitAnimations(activity, R.anim.slide_in_left, R.anim.slide_out_right)
-                .setActionButton(BitmapFactory.decodeResource(activity.getResources(), R.drawable.ic_chat_bubble_outline_black_24dp),
+                .setActionButton(BitmapFactory.decodeResource(activity.getResources(), R.drawable.ic_comment_outline),
                         activity.getString(R.string.action_show_comments), pendingIntent)
                 .build();
         customIntent.launchUrl(activity, Uri.parse(story.url));
