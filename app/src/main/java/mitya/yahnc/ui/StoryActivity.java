@@ -105,6 +105,7 @@ public class StoryActivity extends AppCompatActivity {
         if (url == null) {
             storyTitleView.setText(currentStory.title);
             storyTextView.setText(Html.fromHtml(currentStory.text));
+            storyTextView.setVisibility(View.VISIBLE);
         } else {
             storyTitleView.setText(String.format("%s (%s)", currentStory.title, url));
         }

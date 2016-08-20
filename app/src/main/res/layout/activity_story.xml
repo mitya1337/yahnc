@@ -54,7 +54,8 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/storyTitle"
                     android:layout_toEndOf="@id/storyScore"
-                    android:layout_toRightOf="@id/storyScore" />
+                    android:layout_toRightOf="@id/storyScore"
+                    android:visibility="gone"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
