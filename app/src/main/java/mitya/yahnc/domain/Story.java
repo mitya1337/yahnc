@@ -2,6 +2,7 @@ package mitya.yahnc.domain;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -19,8 +20,10 @@ public class Story implements Parcelable {
     public final int score;
     public final long time;
     public final Integer[] kids;
+    @Nullable
+    public final String text;
 
-    public Story(int id, String by, String title, String url, int descendantsCount, int score, long time, Integer[] kids, String type) {
+    public Story(int id, String by, String title, String url, int descendantsCount, int score, long time, Integer[] kids, String type, String text) {
         this.by = by;
         this.descendantsCount = descendantsCount;
         this.id = id;
@@ -30,6 +33,7 @@ public class Story implements Parcelable {
         this.title = title;
         this.type = type;
         this.url = url;
+        this.text = text;
     }
 
     protected Story(Parcel in) {
@@ -50,6 +54,7 @@ public class Story implements Parcelable {
                 kids[i] = intKids[i];
             }
         } else kids = null;
+        text = in.readString();
     }
 
     public static final Creator<Story> CREATOR = new Creator<Story>() {
@@ -89,5 +94,6 @@ public class Story implements Parcelable {
         } else {
             dest.writeInt(0);
         }
+        dest.writeString(text);
     }
 }

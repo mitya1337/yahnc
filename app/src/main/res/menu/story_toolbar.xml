@@ -9,4 +9,7 @@
     <item
         android:id="@+id/action_save_story"
         android:title="@string/action_save_story" />
+    <item
+        android:id="@+id/action_show_story"
+        android:title="@string/action_show_story" />
 </menu>

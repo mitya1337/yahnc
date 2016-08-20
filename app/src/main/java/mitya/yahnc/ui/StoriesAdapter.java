@@ -1,10 +1,12 @@
 package mitya.yahnc.ui;
 
+import android.app.Activity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -12,9 +14,10 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import mitya.yahnc.utils.FormatUtils;
 import mitya.yahnc.R;
 import mitya.yahnc.domain.Story;
+import mitya.yahnc.utils.ChromeCustomTab;
+import mitya.yahnc.utils.FormatUtils;
 
 /**
  * Created by Mitya on 23.06.2016.
@@ -22,7 +25,10 @@ import mitya.yahnc.domain.Story;
 public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHolder> {
     private final List<Story> storyList = new ArrayList<>();
 
-    public StoriesAdapter() {
+    private Activity mainActivity;
+
+    public StoriesAdapter(Activity activity) {
+        this.mainActivity = activity;
     }
 
     public void addStory(Story story) {
@@ -55,7 +61,9 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
             String url = FormatUtils.formatUrl(story.url);
             if (url == null) {
                 holder.titleView.setText(story.title);
+                holder.cardView.setOnClickListener(view -> StoryActivity.startWith(view.getContext(), story));
             } else {
+                holder.cardView.setOnClickListener(view -> ChromeCustomTab.openChromeTab(mainActivity, story));
                 holder.titleView.setText(String.format("%s (%s)", story.title, url));
             }
             holder.byView.setText(story.by);
@@ -66,7 +74,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
                 holder.commentsCount.setText(String.format("%d", story.kids.length));
             }
             holder.timeView.setText(FormatUtils.formatDate(story.time, holder.timeView.getContext()));
-            holder.cardView.setOnClickListener(view -> StoryActivity.startWith(view.getContext(), story));
+            holder.commentsCount.setOnClickListener(view -> StoryActivity.startWith(view.getContext(), story));
+            holder.commentsImage.setOnClickListener(view -> StoryActivity.startWith(view.getContext(), story));
             holder.byView.setOnClickListener(view -> UserActivity.startWith(view.getContext(), story));
         }
     }
@@ -89,6 +98,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
         TextView timeView;
         @BindView(R.id.cardView)
         CardView cardView;
+        @BindView(R.id.commentsImage)
+        ImageView commentsImage;
 
         public ViewHolder(View view) {
             super(view);

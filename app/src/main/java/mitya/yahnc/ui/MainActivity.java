@@ -18,9 +18,9 @@ import butterknife.ButterKnife;
 import mitya.yahnc.R;
 import mitya.yahnc.db.DbHelper;
 import mitya.yahnc.db.StoriesRepository;
+import mitya.yahnc.domain.Story;
 import mitya.yahnc.network.StoryIdsService;
 import mitya.yahnc.network.StoryService;
-import mitya.yahnc.domain.Story;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.swiperefresh)
     SwipeRefreshLayout swipeRefreshLayout;
 
-    private StoriesAdapter adapter = new StoriesAdapter();
+    private StoriesAdapter adapter = new StoriesAdapter(this);
     private LinearLayoutManager layoutManager;
     private Observable<Integer> newStories;
     private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;

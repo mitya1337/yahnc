@@ -48,10 +48,19 @@
                     android:layout_toEndOf="@id/storyScore"
                     android:layout_toRightOf="@id/storyScore" />
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/storyText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/storyTitle"
+                    android:layout_toEndOf="@id/storyScore"
+                    android:layout_toRightOf="@id/storyScore"
+                    android:visibility="gone"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/storyText"
                     android:layout_toEndOf="@id/storyScore"
                     android:layout_toRightOf="@id/storyScore"
                     android:weightSum="90">
@@ -82,7 +91,6 @@
                         android:layout_weight="10" />
                 </LinearLayout>
             </RelativeLayout>
-
         </android.support.design.widget.CollapsingToolbarLayout>
 
         <android.support.v7.widget.Toolbar

@@ -2,28 +2,31 @@ package mitya.yahnc.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import mitya.yahnc.R;
 import mitya.yahnc.db.CommentsRepository;
 import mitya.yahnc.db.DbHelper;
 import mitya.yahnc.db.StoriesRepository;
-import mitya.yahnc.network.CommentService;
-import mitya.yahnc.utils.FormatUtils;
-import mitya.yahnc.R;
 import mitya.yahnc.domain.Comment;
 import mitya.yahnc.domain.Story;
+import mitya.yahnc.network.CommentService;
+import mitya.yahnc.utils.ChromeCustomTab;
+import mitya.yahnc.utils.FormatUtils;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -53,6 +56,8 @@ public class StoryActivity extends AppCompatActivity {
     TextView storyScoreView;
     @BindView(R.id.storyCommentsCount)
     TextView storyCommentsCount;
+    @BindView(R.id.storyText)
+    TextView storyTextView;
 
     private LinearLayoutManager layoutManager;
     private final CommentsAdapter adapter = new CommentsAdapter();
@@ -99,6 +104,8 @@ public class StoryActivity extends AppCompatActivity {
         String url = FormatUtils.formatUrl(currentStory.url);
         if (url == null) {
             storyTitleView.setText(currentStory.title);
+            storyTextView.setText(Html.fromHtml(currentStory.text));
+            storyTextView.setVisibility(View.VISIBLE);
         } else {
             storyTitleView.setText(String.format("%s (%s)", currentStory.title, url));
         }
@@ -195,6 +202,9 @@ public class StoryActivity extends AppCompatActivity {
                 return true;
             case R.id.action_save_story:
                 actionSaveStory();
+                return true;
+            case R.id.action_show_story:
+                ChromeCustomTab.openChromeTab(this, currentStory);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
