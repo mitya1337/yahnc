@@ -61,7 +61,9 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
             String url = FormatUtils.formatUrl(story.url);
             if (url == null) {
                 holder.titleView.setText(story.title);
+                holder.cardView.setOnClickListener(view -> StoryActivity.startWith(view.getContext(), story));
             } else {
+                holder.cardView.setOnClickListener(view -> ChromeCustomTab.openChromeTab(mainActivity, story));
                 holder.titleView.setText(String.format("%s (%s)", story.title, url));
             }
             holder.byView.setText(story.by);
@@ -72,7 +74,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
                 holder.commentsCount.setText(String.format("%d", story.kids.length));
             }
             holder.timeView.setText(FormatUtils.formatDate(story.time, holder.timeView.getContext()));
-            holder.cardView.setOnClickListener(view -> ChromeCustomTab.openChromeTab(mainActivity, story));
             holder.commentsCount.setOnClickListener(view -> StoryActivity.startWith(view.getContext(), story));
             holder.commentsImage.setOnClickListener(view -> StoryActivity.startWith(view.getContext(), story));
             holder.byView.setOnClickListener(view -> UserActivity.startWith(view.getContext(), story));

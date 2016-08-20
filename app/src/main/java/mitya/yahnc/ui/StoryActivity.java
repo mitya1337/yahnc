@@ -9,8 +9,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,6 +56,8 @@ public class StoryActivity extends AppCompatActivity {
     TextView storyScoreView;
     @BindView(R.id.storyCommentsCount)
     TextView storyCommentsCount;
+    @BindView(R.id.storyText)
+    TextView storyTextView;
 
     private LinearLayoutManager layoutManager;
     private final CommentsAdapter adapter = new CommentsAdapter();
@@ -100,6 +104,7 @@ public class StoryActivity extends AppCompatActivity {
         String url = FormatUtils.formatUrl(currentStory.url);
         if (url == null) {
             storyTitleView.setText(currentStory.title);
+            storyTextView.setText(Html.fromHtml(currentStory.text));
         } else {
             storyTitleView.setText(String.format("%s (%s)", currentStory.title, url));
         }

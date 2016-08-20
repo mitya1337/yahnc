@@ -37,6 +37,7 @@ public class StoriesRepository extends Repository<Story> {
             values.put(FeedStory.COLUMN_NAME_STORY_SCORE, story.score);
             values.put(FeedStory.COLUMN_NAME_STORY_TIME, Long.toString(story.time));
             values.put(FeedStory.COLUMN_NAME_STORY_KIDS, Arrays.toString(story.kids));
+            values.put(FeedStory.COLUMN_NAME_STORY_TEXT, story.text);
             long rowId = db.insert(FeedStory.STORY_TABLE_NAME, null, values);
             if (rowId == -1) {
                 if (!subscriber.isUnsubscribed()) {
@@ -61,7 +62,7 @@ public class StoriesRepository extends Repository<Story> {
                 do {
                     Story story = new Story(cursor.getInt(0), cursor.getString(1), cursor.getString(2)
                             , cursor.getString(3), cursor.getInt(4), cursor.getInt(5), Long.parseLong(cursor.getString(6))
-                            , FormatUtils.stringToArray(cursor.getString(7)), "story");
+                            , FormatUtils.stringToArray(cursor.getString(7)), "story", cursor.getString(8));
                     if (!subscriber.isUnsubscribed()) {
                         subscriber.onNext(story);
                     }
@@ -80,7 +81,7 @@ public class StoriesRepository extends Repository<Story> {
             if (cursor.moveToFirst()) {
                 Story story = new Story(cursor.getInt(0), cursor.getString(1), cursor.getString(2)
                         , cursor.getString(3), cursor.getInt(4), cursor.getInt(5), Long.parseLong(cursor.getString(6))
-                        , FormatUtils.stringToArray(cursor.getString(7)), "story");
+                        , FormatUtils.stringToArray(cursor.getString(7)), "story", cursor.getString(8));
                 if (!subscriber.isUnsubscribed()) {
                     subscriber.onNext(story);
                 }
