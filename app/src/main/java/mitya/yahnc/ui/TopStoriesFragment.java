@@ -8,8 +8,9 @@ import rx.schedulers.Schedulers;
  * Created by Mitya on 25.08.2016.
  */
 public class TopStoriesFragment extends RemoteStoryFragment {
-    public TopStoriesFragment() {
-        super(StoryService.getInstance().getTopStories().
-                flatMap(stories -> Observable.from(stories).subscribeOn(Schedulers.io())));
+    @Override
+    protected Observable<Integer> getCurrentStories() {
+        return StoryService.getInstance().getTopStories().
+                flatMap(stories -> Observable.from(stories).subscribeOn(Schedulers.io()));
     }
 }

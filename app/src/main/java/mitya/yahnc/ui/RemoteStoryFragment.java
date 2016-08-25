@@ -1,5 +1,11 @@
 package mitya.yahnc.ui;
 
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
 import mitya.yahnc.domain.Story;
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -9,11 +15,7 @@ import rx.schedulers.Schedulers;
  */
 public abstract class RemoteStoryFragment extends StoryFragment {
 
-    protected final Observable<Integer> currentStoriesObservable;
-
-    protected RemoteStoryFragment(Observable<Integer> currentStoriesObservable) {
-        this.currentStoriesObservable = currentStoriesObservable;
-    }
+    protected Observable<Integer> currentStoriesObservable;
 
     @Override
     public Observable<Story> getStories(int currentPage) {
@@ -22,4 +24,12 @@ public abstract class RemoteStoryFragment extends StoryFragment {
                 take(STORIES_PER_PAGE).
                 flatMap(id -> storyService.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty()));
     }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        currentStoriesObservable = getCurrentStories();
+        return super.onCreateView(inflater, container, savedInstanceState);
+    }
+
+    protected abstract Observable<Integer> getCurrentStories();
 }
