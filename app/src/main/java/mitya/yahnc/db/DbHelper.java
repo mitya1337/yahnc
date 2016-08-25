@@ -23,8 +23,8 @@ public class DbHelper extends SQLiteOpenHelper {
             + FeedStory.COLUMN_NAME_STORY_SCORE + " INTEGER , "
             + FeedStory.COLUMN_NAME_STORY_TIME + " TEXT , "
             + FeedStory.COLUMN_NAME_STORY_KIDS + " TEXT , "
-            + FeedStory.COLUMN_NAME_ID + " INTEGER PRIMARY KEY AUTOINCREMENT "
-            + FeedStory.COLUMN_NAME_STORY_TEXT + "TEXT );";
+            + FeedStory.COLUMN_NAME_ID + " INTEGER PRIMARY KEY AUTOINCREMENT , "
+            + FeedStory.COLUMN_NAME_STORY_TEXT + " TEXT );";
 
     private static final String CREATE_TABLE_COMMENTS = "CREATE TABLE "
             + FeedComment.COMMENTS_TABLE_NAME + " ( "

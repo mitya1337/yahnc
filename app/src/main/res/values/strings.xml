@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">yahnc</string>
     <string name="action_refresh">Refresh</string>
-    <string name="action_show_saved_stories">Saved stories</string>
     <string name="action_save_story">Save story</string>
     <string name="action_clear_saved_stories">Clear saved stories</string>
     <string name="action_show_story">Show story</string>
@@ -10,4 +9,11 @@
     <string name="today">Today</string>
     <string name="yesterday">Yesterday</string>
     <string name="story_toolbar_title">StoryActivity</string>
+    <string name="menu_top_stories">Top</string>
+    <string name="menu_new_stories">New</string>
+    <string name="menu_askhn_stories">AskHN</string>
+    <string name="menu_showhn_stories">ShowHN</string>
+    <string name="menu_saved_stories">Saved</string>
+    <string name="open_drawer">Open drawer</string>
+    <string name="close_drawer">Close drawer</string>
 </resources>

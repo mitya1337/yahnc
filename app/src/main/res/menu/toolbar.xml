@@ -7,9 +7,6 @@
         android:title="@string/action_refresh"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/action_show_saved_stories"
-        android:title="@string/action_show_saved_stories" />
-    <item
         android:id="@+id/action_clear_saved_stories"
         android:title="@string/action_clear_saved_stories" />
 </menu>
