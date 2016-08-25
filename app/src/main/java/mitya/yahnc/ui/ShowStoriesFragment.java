@@ -9,7 +9,7 @@ import rx.schedulers.Schedulers;
  */
 public class ShowStoriesFragment extends RemoteStoryFragment {
     public ShowStoriesFragment() {
-        super(StoryService.getInstance().getService().getShowStories().
+        super(StoryService.getInstance().getShowStories().
                 flatMap(stories -> Observable.from(stories).subscribeOn(Schedulers.io())));
     }
 }
