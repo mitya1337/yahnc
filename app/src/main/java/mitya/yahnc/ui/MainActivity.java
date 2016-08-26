@@ -56,10 +56,7 @@ public class MainActivity extends AppCompatActivity {
             setupNavigationView();
             setupDrawerLayout();
             fragmentManager = getSupportFragmentManager();
-            fragment = new NewStoriesFragment();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.fragmentContainer, fragment)
-                    .commit();
+            replaceCurrentFragment(new NewStoriesFragment());
         }
     }
 
