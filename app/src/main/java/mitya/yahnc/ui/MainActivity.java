@@ -99,7 +99,8 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void replaceCurrentFragment(StoryFragment fragment) {
+    private void replaceCurrentFragment(StoryFragment newFragment) {
+        fragment = newFragment;
         fragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, fragment)
                 .commit();
