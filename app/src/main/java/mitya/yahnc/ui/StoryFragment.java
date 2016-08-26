@@ -1,7 +1,7 @@
 package mitya.yahnc.ui;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,9 +15,9 @@ import mitya.yahnc.R;
 import mitya.yahnc.domain.Story;
 import mitya.yahnc.network.StoryService;
 import rx.Observable;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
-import rx.subscriptions.CompositeSubscription;
 
 
 /**
@@ -26,8 +26,6 @@ import rx.subscriptions.CompositeSubscription;
 public abstract class StoryFragment extends android.support.v4.app.Fragment {
     protected static final int STORIES_PER_PAGE = 20;
     protected final StoryService.Api storyService = StoryService.getInstance().getService();
-    @NonNull
-    protected final CompositeSubscription compositeSubscription = new CompositeSubscription();
 
     @BindView(R.id.mainRecyclerView)
     RecyclerView recyclerView;
@@ -37,6 +35,9 @@ public abstract class StoryFragment extends android.support.v4.app.Fragment {
     protected StoriesAdapter adapter;
     private LinearLayoutManager layoutManager;
     protected EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
+
+    @Nullable
+    private Subscription storiesQuerySubscription;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -82,7 +83,7 @@ public abstract class StoryFragment extends android.support.v4.app.Fragment {
     }
 
     private void addNewPage(int currentPage) {
-        compositeSubscription.add(getStories(currentPage)
+        storiesQuerySubscription = getStories(currentPage)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .subscribe(adapter::addStory, error -> {
@@ -92,9 +93,18 @@ public abstract class StoryFragment extends android.support.v4.app.Fragment {
                 }, () -> {
                     swipeRefreshLayout.setRefreshing(false);
                     endlessRecyclerOnScrollListener.setLoading(false);
-                }));
+                });
     }
 
     protected abstract Observable<Story> getStories(int currentPage);
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (storiesQuerySubscription != null) {
+            if (!storiesQuerySubscription.isUnsubscribed()) {
+                storiesQuerySubscription.unsubscribe();
+            }
+        }
+    }
 }

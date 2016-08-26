@@ -2,7 +2,6 @@ package mitya.yahnc.ui;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
@@ -20,14 +19,12 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import mitya.yahnc.R;
 import mitya.yahnc.network.StoryService;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
-import rx.subscriptions.CompositeSubscription;
 
 public class MainActivity extends AppCompatActivity {
     private final StoryService.Api storyService = StoryService.getInstance().getService();
-    @NonNull
-    private final CompositeSubscription compositeSubscription = new CompositeSubscription();
 
     @BindView(R.id.mainToolbar)
     Toolbar mainToolbar;
@@ -39,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
     private FragmentManager fragmentManager;
     private ActionBarDrawerToggle actionBarDrawerToggle;
     private StoryFragment fragment;
+    @Nullable
+    private Subscription storyQuerySubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,9 +48,9 @@ public class MainActivity extends AppCompatActivity {
         Uri data = getIntent().getData();
         if (data != null && data.getQueryParameter("id") != null) {
             Integer id = Integer.parseInt(data.getQueryParameter("id"));
-            compositeSubscription.add(storyService.getStory(id).subscribeOn(Schedulers.io())
+            storyQuerySubscription = storyService.getStory(id).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(story -> StoryActivity.startWith(this, story), Throwable::printStackTrace));
+                    .subscribe(story -> StoryActivity.startWith(this, story), Throwable::printStackTrace);
         } else {
             setupToolbar();
             setupNavigationView();
@@ -136,6 +135,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        compositeSubscription.clear();
+        if (storyQuerySubscription != null) {
+            if (!storyQuerySubscription.isUnsubscribed()) {
+                storyQuerySubscription.unsubscribe();
+            }
+        }
     }
 }
