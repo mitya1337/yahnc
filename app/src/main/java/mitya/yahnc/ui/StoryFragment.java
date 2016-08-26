@@ -66,7 +66,9 @@ public abstract class StoryFragment extends android.support.v4.app.Fragment {
         recyclerView.addOnScrollListener(endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(layoutManager) {
             @Override
             public void onLoadMore(int currentPage) {
-                addNewPage(currentPage);
+                if (adapter.getItemCount() >= STORIES_PER_PAGE) {
+                    addNewPage(currentPage);
+                }
             }
         });
     }
