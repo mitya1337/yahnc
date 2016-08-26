@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/newStories"
+            android:checked="true"
+            android:title="@string/menu_new_stories" />
+        <item
+            android:id="@+id/topStories"
+            android:checked="false"
+            android:title="@string/menu_top_stories" />
+        <item
+            android:id="@+id/askHnStories"
+            android:checked="false"
+            android:title="@string/menu_askhn_stories" />
+        <item
+            android:id="@+id/showHnStories"
+            android:checked="false"
+            android:title="@string/menu_showhn_stories" />
+        <item
+            android:id="@+id/savedStories"
+            android:checked="false"
+            android:title="@string/menu_saved_stories" />
+    </group>
+
+
+</menu>

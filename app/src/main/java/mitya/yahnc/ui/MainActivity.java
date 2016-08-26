@@ -2,11 +2,13 @@ package mitya.yahnc.ui;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.annotation.Nullable;
+import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,73 +18,52 @@ import android.widget.Toast;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import mitya.yahnc.R;
-import mitya.yahnc.db.DbHelper;
-import mitya.yahnc.db.StoriesRepository;
-import mitya.yahnc.domain.Story;
-import mitya.yahnc.network.StoryIdsService;
 import mitya.yahnc.network.StoryService;
-import rx.Observable;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
-import rx.subscriptions.CompositeSubscription;
 
 public class MainActivity extends AppCompatActivity {
-    private static final int STORIES_PER_PAGE = 20;
     private final StoryService.Api storyService = StoryService.getInstance().getService();
-    @NonNull
-    private final CompositeSubscription compositeSubscription = new CompositeSubscription();
 
-    @BindView(R.id.mainRecyclerView)
-    RecyclerView recyclerView;
     @BindView(R.id.mainToolbar)
     Toolbar mainToolbar;
-    @BindView(R.id.swiperefresh)
-    SwipeRefreshLayout swipeRefreshLayout;
+    @BindView(R.id.navigationView)
+    NavigationView navigationView;
+    @BindView(R.id.drawerLayout)
+    DrawerLayout drawerLayout;
 
-    private StoriesAdapter adapter = new StoriesAdapter(this);
-    private LinearLayoutManager layoutManager;
-    private Observable<Integer> newStories;
-    private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
-
+    private FragmentManager fragmentManager;
+    private ActionBarDrawerToggle actionBarDrawerToggle;
+    private StoryFragment fragment;
+    @Nullable
+    private Subscription storyQuerySubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         ButterKnife.bind(this);
         Uri data = getIntent().getData();
         if (data != null && data.getQueryParameter("id") != null) {
             Integer id = Integer.parseInt(data.getQueryParameter("id"));
-            compositeSubscription.add(storyService.getStory(id).subscribeOn(Schedulers.io())
+            storyQuerySubscription = storyService.getStory(id).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(story -> StoryActivity.startWith(this, story), Throwable::printStackTrace));
+                    .subscribe(story -> StoryActivity.startWith(this, story), Throwable::printStackTrace);
         } else {
             setupToolbar();
-            setupSwipeRefreshLayout();
-            setupStoriesList();
-            getNewStories();
-            addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
+            setupNavigationView();
+            setupDrawerLayout();
+            fragmentManager = getSupportFragmentManager();
+            replaceCurrentFragment(new NewStoriesFragment());
         }
     }
 
     @Override
-    protected void onRestart() {
-        super.onRestart();
-        if (newStories == null) {
-            setupToolbar();
-            setupSwipeRefreshLayout();
-            setupStoriesList();
-            getNewStories();
-            addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
-        }
-    }
-
-    private void setupSwipeRefreshLayout() {
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-            adapter.clearData();
-            endlessRecyclerOnScrollListener.setCurrentPage(1);
-            addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
-        });
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        actionBarDrawerToggle.syncState();
     }
 
     private void setupToolbar() {
@@ -90,57 +71,42 @@ public class MainActivity extends AppCompatActivity {
         setTitle(R.string.toolbar_title);
     }
 
-    private void setupStoriesList() {
-        recyclerView.setAdapter(adapter);
-        layoutManager = new LinearLayoutManager(getApplicationContext());
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.addOnScrollListener(endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(layoutManager) {
-            @Override
-            public void onLoadMore(int currentPage) {
-                addNewPage(currentPage);
+    private void setupNavigationView() {
+        navigationView.setNavigationItemSelectedListener(item -> {
+            drawerLayout.closeDrawers();
+            switch (item.getItemId()) {
+                case R.id.newStories:
+                    replaceCurrentFragment(new NewStoriesFragment());
+                    return true;
+                case R.id.topStories:
+                    replaceCurrentFragment(new TopStoriesFragment());
+                    return true;
+                case R.id.askHnStories:
+                    replaceCurrentFragment(new AskStoriesFragment());
+                    return true;
+                case R.id.showHnStories:
+                    replaceCurrentFragment(new ShowStoriesFragment());
+                    return true;
+                case R.id.savedStories:
+                    replaceCurrentFragment(new SavedStoriesFragment());
+                    return true;
+                default:
+                    return true;
             }
         });
     }
 
-    private void addNewPage(int currentPage) {
-        compositeSubscription.add(newStories.
-                skip(STORIES_PER_PAGE * (currentPage - 1)).
-                take(STORIES_PER_PAGE).
-                flatMap(id -> storyService.getStory(id).subscribeOn(Schedulers.io()).onErrorResumeNext(Observable.<Story>empty())).
-                observeOn(AndroidSchedulers.mainThread()).
-                subscribeOn(Schedulers.io()).
-                subscribe(adapter::addStory, error -> {
-                    error.printStackTrace();
-                    swipeRefreshLayout.setRefreshing(false);
-                    endlessRecyclerOnScrollListener.setLoading(false);
-                }, () -> {
-                    swipeRefreshLayout.setRefreshing(false);
-                    endlessRecyclerOnScrollListener.setLoading(false);
-                }));
+    private void replaceCurrentFragment(StoryFragment newFragment) {
+        fragment = newFragment;
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, fragment)
+                .commit();
     }
 
-    private void actionRefresh() {
-        swipeRefreshLayout.setRefreshing(true);
-        adapter.clearData();
-        endlessRecyclerOnScrollListener.setCurrentPage(1);
-        endlessRecyclerOnScrollListener.setLoading(false);
-        addNewPage(endlessRecyclerOnScrollListener.getCurrentPage());
-    }
-
-    private void actionShowSavedStories() {
-        adapter.clearData();
-        DbHelper dbHelper = new DbHelper(this);
-        StoriesRepository storiesRepository = new StoriesRepository(dbHelper);
-        compositeSubscription.add(storiesRepository.find(null, null)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(story -> adapter.addStory(story), Throwable::printStackTrace));
-        endlessRecyclerOnScrollListener.setLoading(true);
-    }
-
-    private void getNewStories() {
-        newStories = StoryIdsService.getInstance().getService().getItems("newstories").
-                flatMap(stories -> Observable.from(stories).subscribeOn(Schedulers.io()));
+    private void setupDrawerLayout() {
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout
+                , mainToolbar, R.string.open_drawer, R.string.close_drawer);
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
     }
 
     @Override
@@ -154,10 +120,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                actionRefresh();
-                return true;
-            case R.id.action_show_saved_stories:
-                actionShowSavedStories();
+                fragment.actionRefresh();
                 return true;
             case R.id.action_clear_saved_stories:
                 // TODO : clear story list
@@ -170,7 +133,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        endlessRecyclerOnScrollListener.setLoading(false);
-        compositeSubscription.clear();
+        if (storyQuerySubscription != null) {
+            if (!storyQuerySubscription.isUnsubscribed()) {
+                storyQuerySubscription.unsubscribe();
+            }
+        }
     }
 }
