@@ -3,6 +3,7 @@ package mitya.yahnc.ui;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -36,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     DrawerLayout drawerLayout;
 
     private FragmentManager fragmentManager;
-
+    private ActionBarDrawerToggle actionBarDrawerToggle;
     private StoryFragment fragment;
 
     @Override
@@ -63,6 +64,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        actionBarDrawerToggle.syncState();
+    }
+
     private void setupToolbar() {
         setSupportActionBar(mainToolbar);
         setTitle(R.string.toolbar_title);
@@ -70,46 +77,39 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupNavigationView() {
         navigationView.setNavigationItemSelectedListener(item -> {
-            if (item.isChecked()) {
-                item.setChecked(false);
-            } else {
-                item.setChecked(true);
-            }
             drawerLayout.closeDrawers();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             switch (item.getItemId()) {
                 case R.id.newStories:
-                    fragmentTransaction.replace(R.id.fragmentContainer, new NewStoriesFragment())
-                            .commit();
+                    replaceCurrentFragment(new NewStoriesFragment());
                     return true;
                 case R.id.topStories:
-                    fragmentTransaction.replace(R.id.fragmentContainer, new TopStoriesFragment())
-                            .commit();
+                    replaceCurrentFragment(new TopStoriesFragment());
                     return true;
                 case R.id.askHnStories:
-                    fragmentTransaction.replace(R.id.fragmentContainer, new AskStoriesFragment())
-                            .commit();
+                    replaceCurrentFragment(new AskStoriesFragment());
                     return true;
                 case R.id.showHnStories:
-                    fragmentTransaction.replace(R.id.fragmentContainer, new ShowStoriesFragment())
-                            .commit();
+                    replaceCurrentFragment(new ShowStoriesFragment());
                     return true;
                 case R.id.savedStories:
-                    fragmentTransaction.replace(R.id.fragmentContainer, new SavedStoriesFragment())
-                            .commit();
+                    replaceCurrentFragment(new SavedStoriesFragment());
                     return true;
                 default:
                     return true;
             }
         });
+    }
 
+    private void replaceCurrentFragment(StoryFragment fragment) {
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, fragment)
+                .commit();
     }
 
     private void setupDrawerLayout() {
-        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout
                 , mainToolbar, R.string.open_drawer, R.string.close_drawer);
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
-        actionBarDrawerToggle.syncState();
     }
 
     @Override
