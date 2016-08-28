@@ -68,11 +68,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHold
             }
             holder.byView.setText(story.by);
             holder.scoreView.setText(String.format("%d", story.score));
-            if (story.kids == null) {
-                holder.commentsCount.setText(String.format("%d", 0));
-            } else {
-                holder.commentsCount.setText(String.format("%d", story.kids.length));
-            }
+            holder.commentsCount.setText(String.format("%d", story.descendantsCount));
             holder.timeView.setText(FormatUtils.formatDate(story.time, holder.timeView.getContext()));
             holder.commentsCount.setOnClickListener(view -> StoryActivity.startWith(view.getContext(), story));
             holder.commentsImage.setOnClickListener(view -> StoryActivity.startWith(view.getContext(), story));

@@ -10,11 +10,16 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -111,11 +116,7 @@ public class StoryActivity extends AppCompatActivity {
         }
         storyByView.setText(currentStory.by);
         storyScoreView.setText(String.format("%d", currentStory.score));
-        if (currentStory.kids == null) {
-            storyCommentsCount.setText(String.format("%d", 0));
-        } else {
-            storyCommentsCount.setText(String.format("%d", currentStory.kids.length));
-        }
+        storyCommentsCount.setText(String.format("%d", currentStory.descendantsCount));
         storyTimeView.setText(FormatUtils.formatDate(currentStory.time, storyTimeView.getContext()));
     }
 
@@ -125,18 +126,33 @@ public class StoryActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
     }
 
-    private Observable<Comment> getNestedComments(Comment comment, int nestingLevel) {
-        if (comment.kids != null) {
-            return Observable.just(comment).concatWith(Observable.from(comment.kids)
-                    .flatMap(commentService::getComment)
-                    .flatMap(childComment -> {
-                        childComment.nestingLevel = nestingLevel;
-                        childComment.storyId = currentStory.id;
-                        return getNestedComments(childComment, nestingLevel + 1);
-                    }));
-        } else {
-            return Observable.just(comment);
-        }
+    private Observable<Comment> getNestedComments(Comment comment) {
+        ArrayList<Comment> childComments = new ArrayList<>();
+        return Observable.create(subscriber -> {
+            childComments.add(comment);
+            if (comment.kids != null) {
+                while (!childComments.isEmpty()) {
+                    Comment currentComment = childComments.get(0);
+                    subscriber.onNext(currentComment);
+                    childComments.remove(0);
+                    if (currentComment.kids != null) {
+                        ArrayList<Integer> listOfKids = new ArrayList<>();
+                        listOfKids.addAll(Arrays.asList(currentComment.kids));
+                        Collections.reverse(listOfKids);
+                        Observable.from(listOfKids)
+                                .flatMap(commentService::getComment)
+                                .subscribe(childComment -> {
+                                    childComment.nestingLevel = currentComment.nestingLevel + 1;
+                                    childComments.add(0, childComment);
+                                }, subscriber::onError);
+                    }
+                }
+                subscriber.onCompleted();
+            } else {
+                subscriber.onNext(comment);
+                subscriber.onCompleted();
+            }
+        });
     }
 
     private void getCommentList(Integer[] commentIds) {
@@ -146,7 +162,7 @@ public class StoryActivity extends AppCompatActivity {
                     .subscribeOn(Schedulers.io())
                     .flatMap(comment -> {
                         comment.storyId = currentStory.id;
-                        return getNestedComments(comment, 1);
+                        return getNestedComments(comment);
                     })
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(adapter::addComment, error -> {
@@ -162,6 +178,7 @@ public class StoryActivity extends AppCompatActivity {
     private void setupSwipeRefreshLayout() {
         swipeRefreshLayout.setOnRefreshListener(() -> {
             adapter.clearData();
+
             getCommentList(currentStory.kids);
         });
     }
