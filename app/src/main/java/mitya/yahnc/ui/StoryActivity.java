@@ -10,7 +10,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,6 +19,8 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Stack;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -68,7 +69,6 @@ public class StoryActivity extends AppCompatActivity {
     private final CommentsAdapter adapter = new CommentsAdapter();
     private StoriesRepository storiesRepository;
     private CommentsRepository commentsRepository;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,31 +127,29 @@ public class StoryActivity extends AppCompatActivity {
     }
 
     private Observable<Comment> getNestedComments(Comment comment) {
-        ArrayList<Comment> childComments = new ArrayList<>();
+        Stack<Comment> childComments = new Stack<>();
         return Observable.create(subscriber -> {
-            childComments.add(comment);
+            childComments.push(comment);
             if (comment.kids != null) {
-                while (!childComments.isEmpty()) {
-                    Comment currentComment = childComments.get(0);
+                while (!childComments.empty()) {
+                    Comment currentComment = childComments.pop();
                     subscriber.onNext(currentComment);
-                    childComments.remove(0);
                     if (currentComment.kids != null) {
-                        ArrayList<Integer> listOfKids = new ArrayList<>();
+                        List<Integer> listOfKids = new ArrayList<>();
                         listOfKids.addAll(Arrays.asList(currentComment.kids));
                         Collections.reverse(listOfKids);
                         Observable.from(listOfKids)
                                 .flatMap(commentService::getComment)
                                 .subscribe(childComment -> {
                                     childComment.nestingLevel = currentComment.nestingLevel + 1;
-                                    childComments.add(0, childComment);
+                                    childComments.push(childComment);
                                 }, subscriber::onError);
                     }
                 }
-                subscriber.onCompleted();
             } else {
                 subscriber.onNext(comment);
-                subscriber.onCompleted();
             }
+            subscriber.onCompleted();
         });
     }
 
