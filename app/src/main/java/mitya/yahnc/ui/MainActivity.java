@@ -49,7 +49,10 @@ public class MainActivity extends AppCompatActivity {
             Integer id = Integer.parseInt(data.getQueryParameter("id"));
             storyQuerySubscription = storyService.getStory(id).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(story -> StoryActivity.startWith(this, story), Throwable::printStackTrace);
+                    .subscribe(story -> {
+                        this.finish();
+                        StoryActivity.startWith(this, story);
+                    }, Throwable::printStackTrace);
         } else {
             setupToolbar();
             setupNavigationView();
@@ -62,7 +65,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        actionBarDrawerToggle.syncState();
+        if (actionBarDrawerToggle != null) {
+            actionBarDrawerToggle.syncState();
+        }
     }
 
     private void setupToolbar() {
