@@ -1,6 +1,7 @@
 package mitya.yahnc.db;
 
-import rx.Observable;
+
+import io.reactivex.Observable;
 
 /**
  * Created by Mitya on 14.08.2016.

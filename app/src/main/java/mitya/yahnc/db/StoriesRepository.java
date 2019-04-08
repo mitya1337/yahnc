@@ -7,9 +7,9 @@ import android.database.sqlite.SQLiteException;
 
 import java.util.Arrays;
 
+import io.reactivex.Observable;
 import mitya.yahnc.domain.Story;
 import mitya.yahnc.utils.FormatUtils;
-import rx.Observable;
 
 import static mitya.yahnc.db.DbHelper.FeedStory;
 
@@ -40,14 +40,14 @@ public class StoriesRepository extends Repository<Story> {
             values.put(FeedStory.COLUMN_NAME_STORY_TEXT, story.text);
             long rowId = db.insert(FeedStory.STORY_TABLE_NAME, null, values);
             if (rowId == -1) {
-                if (!subscriber.isUnsubscribed()) {
+                if (!subscriber.isDisposed()) {
                     subscriber.onError(new SQLiteException("Could not save item"));
                 }
             } else {
-                if (!subscriber.isUnsubscribed()) {
+                if (!subscriber.isDisposed()) {
                     subscriber.onNext(rowId);
                 }
-                subscriber.onCompleted();
+                subscriber.onComplete();
             }
             db.close();
         });
@@ -63,14 +63,14 @@ public class StoriesRepository extends Repository<Story> {
                     Story story = new Story(cursor.getInt(0), cursor.getString(1), cursor.getString(2)
                             , cursor.getString(3), cursor.getInt(4), cursor.getInt(5), Long.parseLong(cursor.getString(6))
                             , FormatUtils.stringToArray(cursor.getString(7)), "story", cursor.getString(8));
-                    if (!subscriber.isUnsubscribed()) {
+                    if (!subscriber.isDisposed()) {
                         subscriber.onNext(story);
                     }
                 } while (cursor.moveToNext());
             }
             cursor.close();
             db.close();
-            subscriber.onCompleted();
+            subscriber.onComplete();
         });
     }
 
@@ -82,12 +82,12 @@ public class StoriesRepository extends Repository<Story> {
                 Story story = new Story(cursor.getInt(0), cursor.getString(1), cursor.getString(2)
                         , cursor.getString(3), cursor.getInt(4), cursor.getInt(5), Long.parseLong(cursor.getString(6))
                         , FormatUtils.stringToArray(cursor.getString(7)), "story", cursor.getString(8));
-                if (!subscriber.isUnsubscribed()) {
+                if (!subscriber.isDisposed()) {
                     subscriber.onNext(story);
                 }
-                subscriber.onCompleted();
+                subscriber.onComplete();
             } else {
-                if (!subscriber.isUnsubscribed()) {
+                if (!subscriber.isDisposed()) {
                     subscriber.onError(new SQLiteException("Story not found"));
                 }
             }
