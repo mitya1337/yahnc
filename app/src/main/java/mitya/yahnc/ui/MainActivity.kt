@@ -2,7 +2,6 @@ package mitya.yahnc.ui
 
 import android.os.Bundle
 import android.support.v4.view.GravityCompat
-import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
@@ -98,7 +97,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Database cleared", Toast.LENGTH_SHORT).show()
                 super.onOptionsItemSelected(item)
             }
-            R.id.home -> {
+            android.R.id.home -> {
                 drawerLayout.openDrawer(GravityCompat.START)
                 true
             }
