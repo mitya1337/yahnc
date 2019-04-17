@@ -112,10 +112,14 @@ class StoryActivity : AppCompatActivity() {
                         getNestedComments(comment)
                     }
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({ adapter.addComment(it) }, { error ->
+                    .subscribe({
+                        adapter.addComment(it)
+                    }, { error ->
                         error.printStackTrace()
                         storySwiperefresh.isRefreshing = false
-                    }, { storySwiperefresh.isRefreshing = false }))
+                    }, {
+                        storySwiperefresh.isRefreshing = false
+                    }))
         } else {
             storySwiperefresh.isRefreshing = false
             Toast.makeText(this, "No comments", Toast.LENGTH_SHORT).show()
@@ -124,8 +128,7 @@ class StoryActivity : AppCompatActivity() {
 
     private fun setupSwipeRefreshLayout() {
         storySwiperefresh.setOnRefreshListener {
-            adapter.clearData()
-            getCommentList(currentStory.kids)
+            refreshComments()
         }
     }
 
@@ -150,8 +153,7 @@ class StoryActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.action_refresh -> {
                 storySwiperefresh.isRefreshing = true
-                adapter.clearData()
-                getCommentList(currentStory.kids)
+                refreshComments()
                 return true
             }
             R.id.action_save_story -> {
@@ -164,6 +166,12 @@ class StoryActivity : AppCompatActivity() {
             }
             else -> return super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun refreshComments() {
+        compositeDisposable.clear()
+        adapter.clearData()
+        getCommentList(currentStory.kids)
     }
 
     override fun onDestroy() {

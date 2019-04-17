@@ -44,10 +44,6 @@ class CommentsAdapter : RecyclerView.Adapter<CommentsAdapter.ViewHolder>() {
         this.notifyItemRangeRemoved(0, size)
     }
 
-    fun getCommentList(): List<Comment> {
-        return commentList
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.comment_layout, parent, false)
         return ViewHolder(itemView)
